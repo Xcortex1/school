@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asinhrom & includeAI | Образовательный портал</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           RESET & BASE STYLES (Quiet Luxury)
+           ========================================= */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #FDFBF7;
+            --bg-secondary: #FFFFFF;
+            --gold-dark: #A68A48;
+            --gold-main: #C5A059;
+            --gold-light: #E5D3B3;
+            --gold-glow: rgba(197, 160, 89, 0.15);
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+            --text-muted: #888888;
+            --border-light: rgba(197, 160, 89, 0.2);
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
+            --shadow-gold: 0 8px 32px rgba(197, 160, 89, 0.1);
+            --transition-smooth: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        /* =========================================
+           LAYOUT & CONTAINERS
+           ========================================= */
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            position: relative;
+        }
+
+        .view {
+            display: none;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================
+           HEADER & GREETING
+           ========================================= */
+        .header-section {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 60px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold-main), transparent);
+        }
+
+        .greeting-text {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .greeting-text .gold-accent {
+            color: var(--gold-main);
+            font-style: italic;
+        }
+
+        .creator-credit {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-top: 24px;
+            font-weight: 300;
+        }
+
+        /* =========================================
+           PANIC BUTTON & MODAL
+           ========================================= */
+        .panic-section {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .panic-btn {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            padding: 20px 60px;
+            background: transparent;
+            color: var(--gold-dark);
+            border: 2px solid var(--gold-main);
+            border-radius: 100px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panic-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--gold-glow), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .panic-btn:hover::before {
+            left: 100%;
+        }
+
+        .panic-btn:hover {
+            background: var(--gold-main);
+            color: #FFF;
+            box-shadow: var(--shadow-gold);
+            transform: translateY(-2px);
+        }
+
+        .panic-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(253, 251, 247, 0.97);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 40px;
+        }
+
+        .panic-modal.active {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .panic-close {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: 1px solid var(--border-light);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }
+
+        .panic-close:hover {
+            border-color: var(--gold-main);
+            color: var(--gold-main);
+        }
+
+        .breathing-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--gold-light), var(--gold-main));
+            opacity: 0.8;
+            animation: breathe 8s infinite ease-in-out;
+            margin-bottom: 40px;
+            box-shadow: 0 0 60px var(--gold-glow);
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.7); opacity: 0.5; }
+            50% { transform: scale(1.3); opacity: 1; }
+        }
+
+        .calm-instructions {
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .calm-instructions h2 {
+            font-size: 2rem;
+            color: var(--gold-dark);
+            margin-bottom: 20px;
+        }
+
+        .calm-instructions p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.8;
+        }
+
+        .calm-instructions .step {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            text-align: left;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .calm-instructions .step strong {
+            color: var(--gold-main);
+        }
+
+        /* =========================================
+           SUBJECTS GRID
+           ========================================= */
+        .subjects-section {
+            margin-bottom: 80px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 2px;
+            background: var(--gold-main);
+            margin: 16px auto 0;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .subject-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subject-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 60%, var(--gold-glow));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .subject-card:hover::before {
+            opacity: 1;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-gold);
+            border-color: var(--gold-main);
+        }
+
+        .subject-card h3 {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .subject-card .subject-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* =========================================
+           SUBJECT VIEW (Topics & Search)
+           ========================================= */
+        .subject-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .subject-view-title {
+            font-size: 2.2rem;
+            color: var(--text-primary);
+        }
+
+        .close-subject-btn {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            transition: var(--transition-smooth);
+        }
+
+        .close-subject-btn:hover {
+            border-color: var(--gold-main);
+            color: var(--gold-main);
+            transform: rotate(90deg);
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 18px 24px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            color: var(--text-primary);
+            transition: var(--transition-smooth);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--gold-main);
+            box-shadow: 0 0 0 4px var(--gold-glow);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .topics-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .topic-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topic-item:hover {
+            border-color: var(--gold-main);
+            box-shadow: var(--shadow-soft);
+            transform: translateX(5px);
+        }
+
+        .topic-item h4 {
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .topic-item .arrow {
+            color: var(--gold-main);
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .topic-item:hover .arrow {
+            transform: translateX(5px);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* =========================================
+           TOPIC VIEW (Explanation & Quiz)
+           ========================================= */
+        .topic-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .back-to-topics-btn {
+            background: none;
+            border: none;
+            color: var(--gold-main);
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition-smooth);
+        }
+
+        .back-to-topics-btn:hover {
+            color: var(--gold-dark);
+            transform: translateX(-3px);
+        }
+
+        .topic-explanation {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .topic-explanation h2 {
+            font-size: 1.8rem;
+            color: var(--gold-dark);
+            margin-bottom: 20px;
+        }
+
+        .topic-explanation p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .quiz-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .quiz-section h3 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .quiz-question {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .quiz-question:last-of-type {
+            border-bottom: none;
+        }
+
+        .quiz-question p {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 10px;
+        }
+
+        .quiz-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .quiz-option:hover {
+            border-color: var(--gold-main);
+            background: var(--gold-glow);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--gold-main);
+            background: var(--gold-glow);
+        }
+
+        .quiz-option.correct {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .quiz-option.incorrect {
+            border-color: #F44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .quiz-option input[type="radio"] {
+            display: none;
+        }
+
+        .quiz-option .radio-custom {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--text-muted);
+            transition: var(--transition-smooth);
+            flex-shrink: 0;
+        }
+
+        .quiz-option.selected .radio-custom {
+            border-color: var(--gold-main);
+            background: var(--gold-main);
+            box-shadow: inset 0 0 0 3px var(--bg-secondary);
+        }
+
+        .quiz-option.correct .radio-custom {
+            border-color: #4CAF50;
+            background: #4CAF50;
+            box-shadow: inset 0 0 0 3px var(--bg-secondary);
+        }
+
+        .quiz-option.incorrect .radio-custom {
+            border-color: #F44336;
+            background: #F44336;
+            box-shadow: inset 0 0 0 3px var(--bg-secondary);
+        }
+
+        .check-quiz-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 30px auto 0;
+            padding: 16px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: var(--gold-main);
+            color: #FFF;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: var(--shadow-gold);
+        }
+
+        .check-quiz-btn:hover {
+            background: var(--gold-dark);
+            transform: translateY(-2px);
+        }
+
+        .quiz-result {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            display: none;
+        }
+
+        .quiz-result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .quiz-result.pass {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2E7D32;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .quiz-result.fail {
+            background: rgba(244, 67, 54, 0.1);
+            color: #C62828;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        /* =========================================
+           EASTER EGG (Пасхалка)
+           ========================================= */
+        .easter-egg-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 26, 26, 0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .easter-egg-modal.active {
+            display: flex;
+            animation: fadeIn 1s ease;
+        }
+
+        .easter-egg-modal h2 {
+            font-size: 3rem;
+            color: var(--gold-main);
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        .easter-egg-modal p {
+            font-size: 1.2rem;
+            color: #FFF;
+            max-width: 600px;
+            line-height: 1.8;
+        }
+
+        .easter-egg-close {
+            margin-top: 40px;
+            padding: 12px 30px;
+            background: transparent;
+            border: 1px solid var(--gold-main);
+            color: var(--gold-main);
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition-smooth);
+        }
+
+        .easter-egg-close:hover {
+            background: var(--gold-main);
+            color: #1A1A1A;
+        }
+
+        /* =========================================
+           RESPONSIVE DESIGN
+           ========================================= */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 20px 16px;
+            }
+            .header-section {
+                padding: 40px 16px;
+                margin-bottom: 40px;
+            }
+            .subjects-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+            .subject-card {
+                padding: 20px 12px;
+            }
+            .topic-explanation, .quiz-section {
+                padding: 24px;
+            }
+            .subject-view-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- MAIN VIEW -->
+        <div id="main-view" class="view active">
+            <header class="header-section">
+                <h1 class="greeting-text">
+                    привет! ты сюда попал не зря, здесь ты сможешь получить <span class="gold-accent">пасхалки</span> и многое другое!
+                </h1>
+                <p class="creator-credit">сайт создан учеником Овсянкиным Артемом 6М 2026</p>
+            </header>
+
+            <section class="panic-section">
+                <button class="panic-btn" id="panic-btn">ПАНИКА</button>
+            </section>
+
+            <section class="subjects-section">
+                <h2 class="section-title">Выбери предмет</h2>
+                <div class="subjects-grid" id="subjects-grid">
+                    <!-- Subjects will be injected here by JS -->
+                </div>
+            </section>
+        </div>
+
+        <!-- SUBJECT VIEW -->
+        <div id="subject-view" class="view">
+            <div class="subject-view-header">
+                <h2 class="subject-view-title" id="subject-view-title">Предмет</h2>
+                <button class="close-subject-btn" id="close-subject-btn">&times;</button>
+            </div>
+            <div class="search-container">
+                <input type="text" class="search-input" id="search-input" placeholder="Начните вводить тему для поиска...">
+            </div>
+            <div class="topics-list" id="topics-list">
+                <!-- Topics will be injected here by JS -->
+            </div>
+        </div>
+
+        <!-- TOPIC VIEW -->
+        <div id="topic-view" class="view">
+            <div class="topic-view-header">
+                <button class="back-to-topics-btn" id="back-to-topics-btn">
+                    &larr; Назад к темам
+                </button>
+            </div>
+            <div class="topic-explanation" id="topic-explanation">
+                <!-- Explanation injected by JS -->
+            </div>
+            <div class="quiz-section" id="quiz-section">
+                <h3>Мини-тест</h3>
+                <div id="quiz-questions">
+                    <!-- Questions injected by JS -->
+                </div>
+                <button class="check-quiz-btn" id="check-quiz-btn">Проверить ответы</button>
+                <div class="quiz-result" id="quiz-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANIC MODAL -->
+    <div class="panic-modal" id="panic-modal">
+        <button class="panic-close" id="panic-close">&times;</button>
+        <div class="breathing-circle"></div>
+        <div class="calm-instructions">
+            <h2>Сделай паузу</h2>
+            <p>Паника — это нормально. Давай вместе вернем спокойствие.</p>
+            <div class="step">
+                <strong>1. Дыхание 4-7-8:</strong> Вдохни носом на 4 счета. Задержи дыхание на 7 счетов. Медленно выдохни ртом на 8 счетов. Повтори 4 раза.
+            </div>
+            <div class="step">
+                <strong>2. Методика заземления 5-4-3-2-1:</strong> Найди глазами 5 вещей, потрогай 4 вещи, услышь 3 звука, почувствуй 2 запаха, ощути 1 вкус.
+            </div>
+            <div class="step">
+                <strong>3. Физическое расслабление:</strong> Сильно сожми кулаки на 5 секунд, затем резко расслабь. Почувствуй, как напряжение уходит.
+            </div>
+            <div class="step">
+                <strong>4. Позитивная аффирмация:</strong> Скажи себе: "Я в безопасности. Я справлюсь. Всё идет хорошо".
+            </div>
+        </div>
+    </div>
+
+    <!-- EASTER EGG MODAL -->
+    <div class="easter-egg-modal" id="easter-egg-modal">
+        <h2>✨ Пасхалка найдена! ✨</h2>
+        <p>Ты нашел секретный раздел! Бренд Asinhrom и ИИ includeAI гордятся тобой. Продолжай учиться, исследовать мир и никогда не бойся нажимать на кнопки. Знания — это твоя суперсила!</p>
+        <button class="easter-egg-close" id="easter-egg-close">Закрыть</button>
+    </div>
+
+    <script>
+        // =========================================
+        // DATA STRUCTURE (6th Grade Curriculum)
+        // =========================================
+        const subjectsData = {
+            math: {
+                name: "Математика",
+                icon: "📐",
+                topics: [
+                    {
+                        id: "math_1",
+                        title: "Делимость натуральных чисел",
+                        description: "Делимость натуральных чисел — это фундаментальное понятие арифметики. Число a делится на число b, если существует такое натуральное число c, что a = b * c. Признаки делимости помогают быстро определить, делится ли число на 2, 3, 5, 9, 10 без самого деления. Например, число делится на 2, если его последняя цифра четная. На 5 — если оканчивается на 0 или 5. На 10 — если оканчивается на 0. Признак делимости на 3: сумма цифр числа делится на 3. На 9: сумма цифр делится на 9. Простые числа — это числа, имеющие ровно два делителя (1 и само число). Составные числа имеют более двух делителей. Разложение на простые множители позволяет находить НОД (наибольший общий делитель) и НОК (наименьшее общее кратное).",
+                        quiz: [
+                            { q: "Какой признак делимости на 3?", options: ["Оканчивается на 0", "Сумма цифр делится на 3", "Последняя цифра четная", "Оканчивается на 5"], correct: 1 },
+                            { q: "Какое число является простым?", options: ["9", "15", "17", "21"], correct: 2 },
+                            { q: "Чему равен НОД(12, 18)?", options: ["2", "3", "6", "12"], correct: 2 },
+                            { q: "Сколько делителей у числа 7?", options: ["1", "2", "3", "7"], correct: 1 },
+                            { q: "Какое число делится на 9?", options: ["27", "28", "29", "30"], correct: 0 }
+                        ]
+                    },
+                    {
+                        id: "math_2",
+                        title: "Сложение и вычитание обыкновенных дробей",
+                        description: "Обыкновенная дробь имеет вид a/b, где a — числитель, b — знаменатель. Основное свойство дроби: если числитель и знаменатель умножить или разделить на одно и то же число, не равное нулю, значение дроби не изменится. Сокращение дробей использует это свойство. Для сложения или вычитания дробей с разными знаменателями их нужно привести к общему знаменателю. Общий знаменатель обычно находится как НОК знаменателей. После приведения дробей к общему знаменателю, складывают или вычитают числители, а знаменатель оставляют тем же. Смешанные числа состоят из целой и дробной части. При сложении и вычитании смешанных чисел действия выполняются отдельно для целых и дробных частей.",
+                        quiz: [
+                            { q: "Что нужно сделать перед сложением дробей с разными знаменателями?", options: ["Сократить дроби", "Привести к общему знаменателю", "Перевести в десятичные", "Умножить числители"], correct: 1 },
+                            { q: "Чему равно 1/2 + 1/3?", options: ["2/5", "5/6", "1/6", "2/6"], correct: 1 },
+                            { q: "Какое свойство позволяет сократить дробь 6/9 до 2/3?", options: ["Основное свойство дроби", "Свойство сложения", "Свойство умножения", "Свойство вычитания"], correct: 0 },
+                            { q: "Чему равно 5/6 - 1/6?", options: ["4/6", "2/3", "4/0", "1/6"], correct: 1 },
+                            { q: "Что такое смешанное число?", options: ["Только целая часть", "Только дробная часть", "Целая и дробная часть", "Десятичная дробь"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "math_3",
+                        title: "Умножение и деление обыкновенных дробей",
+                        description: "При умножении дробей перемножаются их числители и знаменатели: (a/b) * (c/d) = (a*c)/(b*d). Перед умножением дроби можно сокращать по диагонали (числитель одной на знаменатель другой). Чтобы разделить одну дробь на другую, нужно первую дробь умножить на дробь, обратную второй: (a/b) / (c/d) = (a/b) * (d/c). Обратная дробь получается заменой числителя и знаменателя местами. При умножении и делении смешанных чисел их сначала переводят в неправильные дроби. Нахождение дроби от числа: чтобы найти дробь m/n от числа A, нужно A умножить на m/n. Нахождение числа по его дроби: чтобы найти число по дроби m/n, значение которой равно B, нужно B разделить на m/n.",
+                        quiz: [
+                            { q: "Как умножить дробь a/b на c/d?", options: ["(a+c)/(b+d)", "(a*c)/(b*d)", "(a*d)/(b*c)", "(a-c)/(b-d)"], correct: 1 },
+                            { q: "Как разделить дробь a/b на c/d?", options: ["(a/b) * (c/d)", "(a/b) * (d/c)", "(a*d)/(b*c)", "(a+c)/(b+d)"], correct: 1 },
+                            { q: "Чему равно 1/2 * 2/3?", options: ["2/5", "1/3", "3/4", "2/6"], correct: 1 },
+                            { q: "Как найти 1/4 от числа 20?", options: ["20 * 4", "20 / 4", "20 + 1/4", "20 - 1/4"], correct: 1 },
+                            { q: "Дробь, обратная 3/5, это...", options: ["5/3", "3/5", "-3/5", "1/3"], correct: 0 }
+                        ]
+                    },
+                    {
+                        id: "math_4",
+                        title: "Отношения и пропорции",
+                        description: "Отношение двух чисел показывает, во сколько раз первое число больше второго, или какую часть первое составляет от второго. Отношение a к b записывается как a:b или a/b. Пропорция — это равенство двух отношений: a:b = c:d. Основное свойство пропорции: произведение крайних членов равно произведению средних (a*d = b*c). Если в пропорции известны три члена, четвертый можно найти через это свойство. Прямая пропорциональность: если одна величина увеличивается в несколько раз, другая увеличивается во столько же раз (y = kx). Обратная пропорциональность: если одна величина увеличивается в несколько раз, другая уменьшается во столько же раз (y = k/x). Процент — это одна сотая часть числа (1% = 1/100).",
+                        quiz: [
+                            { q: "Что такое пропорция?", options: ["Сумма двух отношений", "Разность двух отношений", "Равенство двух отношений", "Произведение двух отношений"], correct: 2 },
+                            { q: "Основное свойство пропорции a:b = c:d:", options: ["a+b = c+d", "a*d = b*c", "a*c = b*d", "a/b = d/c"], correct: 1 },
+                            { q: "Чему равно 25% от числа 80?", options: ["20", "25", "40", "80"], correct: 0 },
+                            { q: "Если a:b = 2:3, и b=9, то a равно:", options: ["3", "6", "12", "27"], correct: 1 },
+                            { q: "Какая зависимость называется прямой пропорциональностью?", options: ["y = k/x", "y = kx", "y = k+x", "y = k-x"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "math_5",
+                        title: "Рациональные числа и координаты",
+                        description: "Рациональные числа — это числа, которые можно записать в виде обыкновенной дроби m/n, где m — целое число, n — натуральное. К рациональным числам относятся целые числа, конечные и бесконечные периодические десятичные дроби. Положительные и отрицательные числа располагаются на координатной прямой. Модуль числа a (|a|) — это расстояние от точки до начала отсчета, он всегда неотрицателен. Правила действий с рациональными числами: при сложении чисел с разными знаками вычитают из большего модуля меньший и ставят знак числа с большим модулем. При умножении/делении: плюс на плюс дает плюс, минус на минус дает плюс, плюс на минус дает минус. Координатная плоскость образуется двумя перпендикулярными осями (Ox и Oy). Точка на плоскости задается парой координат (x, y).",
+                        quiz: [
+                            { q: "Что такое рациональное число?", options: ["Только натуральное число", "Число, которое можно записать как m/n", "Любое десятичное число", "Только отрицательное число"], correct: 1 },
+                            { q: "Чему равен модуль числа -7?", options: ["-7", "7", "0", "1/7"], correct: 1 },
+                            { q: "Чему равно (-3) * (-4)?", options: ["-12", "12", "-7", "7"], correct: 1 },
+                            { q: "Как задаются координаты точки на плоскости?", options: ["Одной цифрой", "Парой чисел (x, y)", "Тремя числами", "Только положительными числами"], correct: 1 },
+                            { q: "Чему равно (-5) + 8?", options: ["-13", "13", "3", "-3"], correct: 2 }
+                        ]
+                    }
+                ]
+            },
+            russian: {
+                name: "Русский язык",
+                icon: "📖",
+                topics: [
+                    {
+                        id: "rus_1",
+                        title: "Лексика. Словарный состав русского языка",
+                        description: "Лексика — это словарный состав языка. Слова в русском языке делятся на однозначные и многозначные. Однозначные слова имеют только одно лексическое значение (например, названия городов, научные термины). Многозначные слова имеют несколько значений (например, слово 'золотой' может означать сделанный из золота, цвет, или переносно — очень хороший). Прямое и переносное значения слова: прямое значение — основное, номинативное; переносное — основанное на сходстве предметов или явлений (метафора, метонимия). Синонимы — слова, разные по звучанию, но близкие по значению (бежать — мчаться). Антонимы — слова с противоположным значением (день — ночь). Омонимы — слова, одинаковые по звучанию и написанию, но разные по значению (коса — инструмент, коса — прическа, коса — мыс). Фразеологизмы — устойчивые выражения, значение которых не складывается из значений отдельных слов (бить баклуши — бездельничать).",
+                        quiz: [
+                            { q: "Что изучает лексика?", options: ["Состав слов", "Словарный состав языка", "Правила написания", "Строение предложений"], correct: 1 },
+                            { q: "Как называются слова с противоположным значением?", options: ["Синонимы", "Антонимы", "Омонимы", "Паронимы"], correct: 1 },
+                            { q: "Что такое фразеологизм?", options: ["Новое слово", "Устойчивое выражение", "Однозначное слово", "Научный термин"], correct: 1 },
+                            { q: "Слова 'мир' (вселенная) и 'мир' (отсутствие войны) — это:", options: ["Синонимы", "Антонимы", "Омонимы", "Фразеологизмы"], correct: 2 },
+                            { q: "Какое слово многозначное?", options: ["Москва", "Стол", "Рука (часть тела, помощь)", "Кислород"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "rus_2",
+                        title: "Морфемика. Состав слова",
+                        description: "Морфемика изучает состав слова. Минимальная значимая часть слова называется морфемой. Корень — главная значимая часть слова, в которой заключено общее лексическое значение для всех однокоренных слов (ход — ходить, походка). Окончание — изменяемая часть слова, служащая для связи слов в предложении (в слове 'столы' окончание -ы). Основа слова — это часть слова без окончания (стол-). Приставка (префикс) стоит перед корнем и служит для образования новых слов (при-ходить). Суффикс стоит после корня и также служит для словообразования (ход-ить-к-а). Черередование звуков в корне — это исторические или позиционные изменения звуков (ходить - хожу, петь - пою). Способы словообразования: приставочный (на-писать), суффиксальный (лес-ник), приставочно-суффиксальный (под-снеж-ник), бессуффиксный (бег-ать -> бег), сложение основ (водо-пад).",
+                        quiz: [
+                            { q: "Что такое морфема?", options: ["Целое слово", "Минимальная значимая часть слова", "Окончание", "Часть речи"], correct: 1 },
+                            { q: "Какая часть слова служит для связи слов в предложении?", options: ["Корень", "Приставка", "Суффикс", "Окончание"], correct: 3 },
+                            { q: "Что такое основа слова?", options: ["Только корень", "Часть слова без окончания", "Корень и окончание", "Приставка и корень"], correct: 1 },
+                            { q: "Как образовано слово 'подснежник'?", options: ["Приставочным", "Суффиксальным", "Приставочно-суффиксальным", "Сложением"], correct: 2 },
+                            { q: "Что такое чередование звуков?", options: ["Изменение окончания", "Историческое изменение звуков в корне", "Добавление приставки", "Удаление суффикса"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "rus_3",
+                        title: "Морфология. Имя существительное",
+                        description: "Имя существительное — это самостоятельная часть речи, которая обозначает предмет и отвечает на вопросы кто? что?. Существительные бывают одушевленные и неодушевленные, собственные и нарицательные. Они имеют постоянные признаки: склонение (1-е, 2-е, 3-е, разносклоняемые, несклоняемые), род (мужской, женский, средний) и число (единственное, множественное). Непостоянный признак — падеж (6 падежей: Именительный, Родительный, Дательный, Винительный, Творительный, Предложный). Синтаксическая роль: в предложении существительные чаще всего бывают подлежащими или дополнениями, реже — обстоятельствами или определениями. Правописание падежных окончаний зависит от склонения. У существительных 1-го склонения в Р.п. мн.ч. пишется нулевое окончание или -и (земель, вишен). У сущ. мн.ч. в Р.п. часто бывает беглая гласная (окошек, чулок).",
+                        quiz: [
+                            { q: "На какие вопросы отвечает имя существительное?", options: ["Какой? Чей?", "Что делать?", "Кто? Что?", "Сколько?"], correct: 2 },
+                            { q: "Сколько падежей в русском языке?", options: ["3", "4", "5", "6"], correct: 3 },
+                            { q: "К какому склонению относится слово 'поле'?", options: ["1-е", "2-е", "3-е", "Несклоняемое"], correct: 1 },
+                            { q: "Какой признак существительного является непостоянным?", options: ["Род", "Склонение", "Падеж", "Одушевленность"], correct: 2 },
+                            { q: "Чем чаще всего бывает существительное в предложении?", options: ["Сказуемым", "Подлежащим или дополнением", "Обстоятельством места", "Обращением"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "rus_4",
+                        title: "Морфология. Имя прилагательное",
+                        description: "Имя прилагательное — это самостоятельная часть речи, обозначающая признак предмета и отвечающая на вопросы какой? чей?. Прилагательные изменяются по родам (в единственном числе), числам и падежах. В множественном числе род не различается. Прилагательные в предложении чаще всего выступают в роли определений (какой предмет?) или именной части составного именного сказуемого (каков предмет?). Полные прилагательные имеют окончания, зависящие от падежа. В именительном и винительном падежах окончания -ый, -ий, -ая, -яя, -ое, -ее. В остальных падежах (косвенных) окончания определяются вопросом: какой? (Р.п. -ого/-его), какому? (Д.п. -ому/-ему), каким? (Т.п. -ым/-им), о каком? (П.п. -ом/-ем). Краткие прилагательные образуются путем отбрасывания окончания (красивый -> красив) и в предложении всегда являются сказуемым.",
+                        quiz: [
+                            { q: "На какие вопросы отвечает прилагательное?", options: ["Кто? Что?", "Какой? Чей?", "Что делать?", "Где? Куда?"], correct: 1 },
+                            { q: "По каким признакам изменяется прилагательное?", options: ["Только по числам", "По родам, числам и падежам", "Только по падежам", "По временам"], correct: 1 },
+                            { q: "Чем чаще всего является прилагательное в предложении?", options: ["Подлежащим", "Сказуемым", "Определением", "Дополнением"], correct: 2 },
+                            { q: "Какое окончание у прилагательного в Родительном падеже (вопрос 'какого?')?", options: ["-ого/-его", "-ому/-ему", "-ым/-им", "-ом/-ем"], correct: 0 },
+                            { q: "Чем в предложении является краткое прилагательное?", options: ["Определением", "Сказуемым", "Дополнением", "Обстоятельством"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "rus_5",
+                        title: "Морфология. Глагол",
+                        description: "Глагол — это самостоятельная часть речи, обозначающая действие предмета и отвечающая на вопросы что делать? что сделать? что делаю? и т.д. Глаголы имеют постоянные признаки: спряжение (I и II), вид (совершенный и несовершенный), возвратность (возвратные и невозвратные), переходность. Непостоянные признаки: наклонение (изъявительное, повелительное, условное), время (прошедшее, настоящее, будущее), лицо (в настоящем и будущем), число, род (в прошедшем). Спряжение определяет окончания глаголов в настоящем и будущем времени. К I спряжению относятся глаголы на -ить (кроме брить, стелить), а также 11 глаголов-исключений (гнать, дышать, держать, слышать, смотреть, видеть, обидеть, вертеть, терпеть, зависеть, ненавидеть). Ко II спряжению — все остальные, включая 4 глагола на -ить (брить, стелить, стелить, зиждиться) и 7 глаголов на -еть/асть (смотреть, видеть, обидеть, вертеть, терпеть, зависеть, ненавидеть - *примечание: в школе их часто относят к I спряжению как исключения, здесь дана классическая школьная трактовка*). В прошедшем времени глаголы изменяются по родам и числам.",
+                        quiz: [
+                            { q: "Что обозначает глагол?", options: ["Признак предмета", "Действие предмета", "Предмет", "Количество"], correct: 1 },
+                            { q: "Какие наклонения есть у глагола?", options: ["Прошедшее, настоящее, будущее", "Изъявительное, повелительное, условное", "Единственное, множественное", "Совершенный, несовершенный"], correct: 1 },
+                            { q: "К какому спряжению относится глагол 'читать'?", options: ["I спряжение", "II спряжение", "Разноспрягаемый", "Не спрягается"], correct: 1 },
+                            { q: "В каком времени глагол изменяется по родам?", options: ["Настоящем", "Будущем", "Прошедшем", "Во всех временах"], correct: 2 },
+                            { q: "Что такое вид глагола?", options: ["Совершенный и несовершенный", "I и II спряжение", "Единственное и множественное", "Изъявительное и повелительное"], correct: 0 }
+                        ]
+                    }
+                ]
+            },
+            literature: {
+                name: "Литература",
+                icon: "📚",
+                topics: [
+                    {
+                        id: "lit_1",
+                        title: "Фольклор. Жанры устного народного творчества",
+                        description: "Фольклор — это народное творчество, устная традиция, передаваемая из поколения в поколение. Основные жанры фольклора: сказки (о животных, волшебные, бытовые), былины, загадки, пословицы и поговорки, частушки, обрядовые песни. Сказки о животных отражают древние представления о мире, животные в них наделены человеческими чертами. Волшебные сказки содержат магию, чудеса, борьбу добра со злом (Иван-царевич, Василиса Премудрая). Бытовые сказки высмеивают пороки общества (поп, купец, мужик). Былины — эпические песни о подвигах богатырей (Илья Муромец, Добрыня Никитич, Алеша Попович). Пословицы — краткие мудрые изречения с законченным смыслом, а поговорки — выражения, не имеющие законченного смысла, но образно описывающие ситуацию. Фольклор является основой для развития профессиональной литературы.",
+                        quiz: [
+                            { q: "Что такое фольклор?", options: ["Профессиональная литература", "Устное народное творчество", "Научные трактаты", "Зарубежная поэзия"], correct: 1 },
+                            { q: "Какой жанр НЕ относится к фольклору?", options: ["Былина", "Сказка", "Роман", "Пословица"], correct: 2 },
+                            { q: "О чем повествуют былины?", options: ["О любви", "О подвигах богатырей", "О природе", "О быте крестьян"], correct: 1 },
+                            { q: "Чем пословица отличается от поговорки?", options: ["Пословица длиннее", "Пословица имеет законченный смысл и поучение", "Поговорка всегда в стихах", "Ничем не отличаются"], correct: 1 },
+                            { q: "К какому жанру относится сказка 'Курочка Ряба'?", options: ["Волшебная", "О животных", "Бытовая", "Былина"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "lit_2",
+                        title: "Русская литература XIX века. А.С. Пушкин",
+                        description: "Александр Сергеевич Пушкин — основоположник современного русского литературного языка, великий поэт и прозаик. В 6 классе изучаются его сказки ('Сказка о мертвой царевне и о семи богатырях'), стихотворения ('Зимнее утро', 'Бесы', 'Няне', 'К Чаадаеву') и проза ('Дубровский', 'Станционный смотритель'). 'Дубровский' — первый русский исторический роман. Главный герой, Гринев, попадает в плен к Пугачеву, но тот отпускает его в благодарность за добрый поступок (подаренный заячий тулуп). Роман поднимает темы милосердия, чести, исторической правды. 'Станционный смотритель' — повесть из цикла 'Повестей Белкина', рассказывающая о 'маленьком человеке', его трагической судьбе и любви к дочери. Лирика Пушкина многогранна: от философских размышлений до интимных посланий. Его язык отличается простотой, точностью и гармонией.",
+                        quiz: [
+                            { q: "Кто является автором романа 'Дубровский'?", options: ["М.Ю. Лермонтов", "Н.В. Гоголь", "А.С. Пушкин", "И.С. Тургенев"], correct: 2 },
+                            { q: "Какой жанр у произведения 'Дубровский'?", options: ["Поэма", "Рассказ", "Исторический роман", "Былина"], correct: 2 },
+                            { q: "Почему Пугачев отпустил Гринева?", options: ["Из-за страха", "В благодарность за заячий тулуп", "По просьбе императрицы", "Случайно"], correct: 1 },
+                            { q: "К какому циклу относится 'Станционный смотритель'?", options: ["Повести Белкина", "Маленькие трагедии", "Сказки", "Поэмы"], correct: 0 },
+                            { q: "Какая тема НЕ является центральной в лирике Пушкина?", options: ["Свобода", "Любовь", "Космические полеты", "Природа"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "lit_3",
+                        title: "Н.В. Гоголь. Повесть 'Тарас Бульба'",
+                        description: "Николай Васильевич Гоголь — великий русский писатель, мастер сюжета и характеров. Повесть 'Тарас Бульба' входит в цикл 'Миргород'. Это произведение о запорожских казаках, их борьбе за независимость, о верности товариществу и Родине. Главный герой, Тарас Бульба, — суровый, непреклонный казак, для которого долг и честь стоят выше личной привязанности. Его сыновья, Остап и Андрий, попадают на Сечь. Остап остается верен Роде и товарищам, героически погибает в плену. Андрий предает Родину ради любви к польской панночке, за что Тарас убивает его со словами: 'Я тебя породил, я тебя и убью!'. Произведение написано в романтическом стиле, с яркими картинами природы, батальными сценами. Гоголь воспевает героизм казаков, но также показывает трагедию предательства и цену верности.",
+                        quiz: [
+                            { q: "В какой цикл входит повесть 'Тарас Бульба'?", options: ["Вечера на хуторе близ Диканьки", "Миргород", "Петербургские повести", "Мертвые души"], correct: 1 },
+                            { q: "Почему Тарас убивает Андрия?", options: ["За трусость", "За предательство Родины", "За кражу", "Из-за ссоры"], correct: 1 },
+                            { q: "Как погибает Остап?", options: ["В бою", "Топится", "Героически погибает в плену", "Умирает от болезни"], correct: 2 },
+                            { q: "В каком стиле написано произведение?", options: ["Классицизм", "Романтизм", "Реализм", "Модернизм"], correct: 1 },
+                            { q: "Что для Тараса Бульбы стоит выше всего?", options: ["Личное счастье", "Богатство", "Товарищество и Родина", "Наука"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "lit_4",
+                        title: "М.Ю. Лермонтов. Поэма 'Песня про купца Калашникова'",
+                        description: "Михаил Юрьевич Лермонтов написал 'Песню про царя Ивана Васильевича, молодого опричника и удалого купца Калашникова' в стиле народной песни. Произведение посвящено теме чести, достоинства и справедливости. Действие происходит во времена Ивана Грозного. Опричник Кирибеевич влюбляется в жену купца Калашникова, Алёну Дмитриевну, и начинает её преследовать. Калашников вызывает Кирибеевича на кулачный бой, чтобы защитить честь семьи. В честном бою Калашников убивает опричника. Царь Иван Грозный спрашивает причину боя, но Калашников не может выдать тайну жены и молчит. Царь казнит Калашникова, но милует его семью. Произведение восхваляет нравственный подвиг, готовность умереть, но не потерять честь. Форма поэмы стилизована под народную песню: зачины, повторы, эпитеты, сравнения.",
+                        quiz: [
+                            { q: "В каком жанре написано произведение Лермонтова?", options: ["Роман", "Песня (поэма)", "Баллада", "Рассказ"], correct: 1 },
+                            { q: "Почему Калашников вызывает Кирибеевича на бой?", options: ["Из-за денег", "Чтобы защитить честь жены", "По приказу царя", "Из зависти"], correct: 1 },
+                            { q: "Что делает царь после боя?", options: ["Награждает Калашникова", "Казнит Калашникова", "Отпускает обоих", "Ссылает Кирибеевича"], correct: 1 },
+                            { q: "Почему Калашников не говорит царю правду?", options: ["Боится царя", "Не хочет позорить жену", "Забыл", "Его прервали"], correct: 1 },
+                            { q: "Какая главная тема произведения?", options: ["Любовь", "Честь и достоинство", "Природа", "Путешествия"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "lit_5",
+                        title: "Литература XX века. М.А. Шолохов 'Судьба человека'",
+                        description: "Михаил Александрович Шолохов — великий русский писатель, лауреат Нобелевской премии. Рассказ 'Судьба человека' повествует о невероятной стойкости и мужестве советского солдата Андрея Соколова. В годы Великой Отечественной войны он прошел фронт, был ранен, попал в плен, пережил ужасы концлагерей, бежал, но узнал, что его жена и дочери погибли, а сын Анатолий погиб в День Победы. Несмотря на все потери, Соколов не сломался. Он усыновил сироту Ванюшку, став ему настоящим отцом. Произведение показывает, что даже после нечеловеческих страданий человек способен сохранить в себе любовь, доброту и человечность. Это гимн силе человеческого духа. Рассказ написан от первого лица, что придает ему особую искренность и эмоциональность.",
+                        quiz: [
+                            { q: "Кто является главным героем рассказа 'Судьба человека'?", options: ["Иван Денисович", "Андрей Соколов", "Василий Теркин", "Павел Корчагин"], correct: 1 },
+                            { q: "Что произошло с сыном Соколова?", options: ["Стал генералом", "Погиб в День Победы", "Пропал без вести", "Уехал за границу"], correct: 1 },
+                            { q: "Кого усыновляет Андрей Соколов в конце?", options: ["Сироту Ванюшку", "Племянника", "Соседского мальчика", "Никого"], correct: 0 },
+                            { q: "Какая главная мысль произведения?", options: ["Война — это плохо", "Человек может выжить и сохранить человечность", "Нужно бежать из плена", "Дети должны слушаться родителей"], correct: 1 },
+                            { q: "От чьего лица ведется повествование?", options: ["От автора", "От лица Соколова", "От лица Ванюшки", "От лица немца"], correct: 1 }
+                        ]
+                    }
+                ]
+            },
+            music: {
+                name: "Музыка",
+                icon: "🎵",
+                topics: [
+                    {
+                        id: "mus_1",
+                        title: "Музыка и изобразительное искусство",
+                        description: "Музыка и изобразительное искусство (живопись) тесно связаны. Оба вида искусства стремятся выразить чувства, идеи и красоту мира, но делают это разными средствами. Живопись использует цвет, линию, форму, композицию. Музыка использует звук, ритм, мелодию, тембр, гармонию. Существуют жанры, объединяющие эти искусства: например, картина может быть 'музыкальной' по настроению (как 'Волна' Айвазовского), а музыкальное произведение может 'рисовать' звуковые образы (как 'Картинки с выставки' Мусоргского). Композиторы часто вдохновлялись картинами, а художники — музыкой. Колорит в живописи можно сравнить с тембром в музыке. Свет и тень в картине аналогичны динамике (громкости) в музыке. Понимание этих связей помогает глубже чувствовать и то, и другое искусство.",
+                        quiz: [
+                            { q: "Какими средствами выразительности обладает музыка?", options: ["Цвет, линия", "Звук, ритм, мелодия", "Глина, камень", "Слово, текст"], correct: 1 },
+                            { q: "Что можно сравнить с колоритом в живописи?", options: ["Ритм", "Тембр", "Темп", "Громкость"], correct: 1 },
+                            { q: "Какое произведение Мусоргского связано с живописью?", options: ["Борис Годунов", "Картинки с выставки", "Ночь на лысой горе", "Хованщина"], correct: 1 },
+                            { q: "Что общего у музыки и живописи?", options: ["Используют одни и те же средства", "Выражают чувства и идеи", "Создаются одним человеком", "Не имеют ничего общего"], correct: 1 },
+                            { q: "Как называется способность чувствовать красоту в искусстве?", options: ["Слух", "Эстетический вкус", "Память", "Внимание"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "mus_2",
+                        title: "Музыкальные жанры. Вокальная и инструментальная музыка",
+                        description: "Музыкальные жанры — это исторически сложившиеся разновидности музыкальных произведений. Они делятся на вокальные (с участием голоса) и инструментальные (исполняемые на музыкальных инструментах). Основные вокальные жанры: песня (народная, эстрадная, авторская), романс (камерно-вокальное произведение на стихи поэта), ария (вокальный эпизод в опере), речитатив (музыкальное произнесение текста). Основные инструментальные жанры: танец (вальс, полька, марш), марш (произведение с четким ритмом), прелюдия (вступительная пьеса), фуга (полифоническое произведение), симфония (крупное произведение для оркестра), соната (циклическое произведение для одного или двух инструментов), концерт (произведение для солирующего инструмента с оркестром). Понимание жанров помогает слушателю настроиться на восприятие музыки и понять её замысел.",
+                        quiz: [
+                            { q: "Что такое музыкальный жанр?", options: ["Название инструмента", "Разновидность музыкального произведения", "Имя композитора", "Скорость исполнения"], correct: 1 },
+                            { q: "Какой жанр относится к вокальной музыке?", options: ["Симфония", "Романс", "Соната", "Концерт"], correct: 1 },
+                            { q: "Что такое ария?", options: ["Танец", "Вокальный эпизод в опере", "Оркестровая пьеса", "Народная песня"], correct: 1 },
+                            { q: "Для чего исполняется симфония?", options: ["Для одного голоса", "Для большого оркестра", "Для хора", "Для танцев"], correct: 1 },
+                            { q: "Что такое марш?", options: ["Медленная песня", "Произведение с четким ритмом", "Танец для двоих", "Дуэт"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "mus_3",
+                        title: "Выразительные средства музыки",
+                        description: "Музыка обладает своими уникальными средствами выразительности, с помощью которых композитор передает чувства и образы. Мелодия — это основа музыки, последовательность звуков, образующая музыкальную мысль. Ритм — соотношение длительностей звуков, организующее музыку во времени. Темп — скорость исполнения музыки (быстро, медленно, умеренно). Динамика — сила звука, громкость (от очень тихо pianissimo до очень громко fortissimo). Тембр — окраска звука, отличающая один инструмент или голос от другого. Гармония — одновременное звучание нескольких звуков (аккорды), создающая фон и глубину. Лад — система звуковых связей (мажор обычно передает радость, минор — грусть). Регистр — высота звучания (низкий, средний, высокий). Все эти средства работают в совокупности, создавая сложный и многогранный музыкальный образ.",
+                        quiz: [
+                            { q: "Что является основой музыки?", options: ["Ритм", "Мелодия", "Темп", "Тембр"], correct: 1 },
+                            { q: "Что такое динамика в музыке?", options: ["Скорость", "Сила звука", "Высота", "Окраска"], correct: 1 },
+                            { q: "Какой лад обычно передает грустное настроение?", options: ["Мажор", "Минор", "Хроматический", "Диатонический"], correct: 1 },
+                            { q: "Что такое тембр?", options: ["Громкость", "Скорость", "Окраска звука", "Длительность"], correct: 2 },
+                            { q: "Что такое ритм?", options: ["Соотношение длительностей звуков", "Последовательность высот", "Сила звука", "Название инструмента"], correct: 0 }
+                        ]
+                    },
+                    {
+                        id: "mus_4",
+                        title: "Музыка в театре. Опера и балет",
+                        description: "Опера и балет — это синтетические виды театрального искусства, где музыка играет главную роль. Опера — это театральное представление, где действие передается через пение и музыку. Основные компоненты оперы: увертюра (оркестровое вступление), арии (сольные номера), речитативы (музыкальная речь), ансамбли (дуэты, трио, хоры), оркестровые эпизоды. Великие русские оперы: 'Евгений Онегин' и 'Пиковая дама' Чайковского, 'Борис Годунов' и 'Князь Игорь' Мусоргского, 'Снегурочка' Римского-Корсакова. Балет — театральное представление, где сюжет раскрывается через танец и музыку. Балетная музыка должна быть ритмичной и выразительной. Знаменитые русские балеты: 'Лебединое озеро', 'Щелкунчик', 'Спящая красавица' Чайковского. В опере и балете музыка не просто сопровождает действие, а является его главным двигателем и выразителем.",
+                        quiz: [
+                            { q: "Что такое опера?", options: ["Инструментальный концерт", "Театральное представление, где действие поется", "Танцевальное шоу", "Хоровое пение"], correct: 1 },
+                            { q: "Как называется оркестровое вступление к опере?", options: ["Ария", "Речитатив", "Увертюра", "Ансамбль"], correct: 2 },
+                            { q: "В каком виде искусства сюжет раскрывается через танец?", options: ["Опера", "Балет", "Оперетта", "Мюзикл"], correct: 1 },
+                            { q: "Кто написал балет 'Лебединое озеро'?", options: ["М. Глинка", "П. Чайковский", "М. Мусоргский", "Н. Римский-Корсаков"], correct: 1 },
+                            { q: "Что такое речитатив?", options: ["Танец", "Музыкальное произнесение текста", "Оркестровая пьеса", "Хоровое пение"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "mus_5",
+                        title: "Великие русские композиторы",
+                        description: "Русская музыкальная культура подарила миру великих композиторов, чьи произведения звучат на всех сценах мира. М.И. Глинка — основоположник русской классической музыки, автор опер 'Иван Сусанин' и 'Руслан и Людмила'. А.П. Бородин, М.П. Мусоргский, Н.А. Римский-Корсаков, П.И. Чайковский — великие композиторы 'Могучей кучки' и их современники. П.И. Чайковский — гений мировой музыки, автор балетов, симфоний, опер. С.В. Рахманинов — великий пианист и композитор, автор фортепианных концертов и прелюдий. И.Ф. Стравинский — новатор, автор балетов 'Жар-птица', 'Петрушка', 'Весна священная'. Д.Д. Шостакович — композитор XX века, автор 15 симфоний, отражающих эпоху. Их музыка отличается глубокой лиричностью, национальным колоритом и философской глубиной.",
+                        quiz: [
+                            { q: "Кто считается основоположником русской классической музыки?", options: ["П. Чайковский", "М. Глинка", "С. Рахманинов", "И. Стравинский"], correct: 1 },
+                            { q: "Кто написал оперу 'Борис Годунов'?", options: ["М. Мусоргский", "Н. Римский-Корсаков", "А. Бородин", "П. Чайковский"], correct: 0 },
+                            { q: "Какие жанры были главными для П.И. Чайковского?", options: ["Только оперы", "Балеты, симфонии, оперы", "Только романсы", "Только фортепианные пьесы"], correct: 1 },
+                            { q: "Кто является автором балета 'Весна священная'?", options: ["С. Прокофьев", "И. Стравинский", "Д. Шостакович", "С. Рахманинов"], correct: 1 },
+                            { q: "Сколько симфоний написал Д.Д. Шостакович?", options: ["5", "9", "15", "20"], correct: 2 }
+                        ]
+                    }
+                ]
+            },
+            history: {
+                name: "История",
+                icon: "🏛️",
+                topics: [
+                    {
+                        id: "hist_1",
+                        title: "Великое переселение народов. Образование варварских королевств",
+                        description: "Великое переселение народов (IV-VI вв.) — масштабное движение племен (германцев, славян, гуннов, сарматов) на территории Римской империи. Причины: климатические изменения, перенаселение, давление кочевников с Востока (гуннов). В 375 г. гунны вторглись в Европу, что ускорило движение германских племен. В 410 г. вестготы под предводительством Алариха взяли Рим. В 476 г. вождь германцев Одоакр сверг последнего римского императора Ромула Августула, что считается датой падения Западной Римской империи. На ее территории образовались варварские королевства: Вестготское (Испания), Франкское (Галлия), Остготское (Италия), Вандалское (Северная Африка). Эти государства сочетали римские и варварские традиции. Со временем германцы принимали христианство и ассимилировались с местным населением, что привело к формированию современных европейских народов.",
+                        quiz: [
+                            { q: "Когда произошло Великое переселение народов?", options: ["I-II вв.", "IV-VI вв.", "IX-X вв.", "XII-XIII вв."], correct: 1 },
+                            { q: "Какое племя вторглось в Европу в 375 г.?", options: ["Вестготы", "Гунны", "Франки", "Славяне"], correct: 1 },
+                            { q: "В каком году пало Западная Римская империя?", options: ["395 г.", "410 г.", "476 г.", "800 г."], correct: 2 },
+                            { q: "Кто сверг последнего римского императора?", options: ["Аларих", "Одоакр", "Теодорих", "Хлодвиг"], correct: 1 },
+                            { q: "Какое королевство образовали франки?", options: ["Испания", "Италия", "Галлия", "Африка"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "hist_2",
+                        title: "Империя Карла Великого и ее распад",
+                        description: "Франкское королевство стало сильнейшим государством в Западной Европе при династии Каролингов. Пипин Короткий передал папе римскому земли, создав Папскую область. Его сын Карл Великий (768-814) вел многочисленные войны, расширив границы государства. В 800 г. папа римский короновал Карла Великого императором, возродив идею Римской империи на Западе. Империя Карла включала современную Францию, Германию, Италию, часть Испании. Карл проводил политику христианизации, развивал образование ('Каролингское возрождение'). После его смерти империя не могла долго существовать из-за слабости центральной власти и феодальной раздробленности. По Верденскому договору 843 г. империя распалась на три части: Западно-Франкское королевство (будущая Франция), Восточно-Франкское (будущая Германия) и Срединное королевство (Италия и земли между ними). Это заложило основы современных европейских государств.",
+                        quiz: [
+                            { q: "В каком году Карл Великий был коронован императором?", options: ["768 г.", "800 г.", "843 г.", "911 г."], correct: 1 },
+                            { q: "Как называлось движение за развитие образования при Карле?", options: ["Ренессанс", "Каролингское возрождение", "Просвещение", "Гуманизм"], correct: 1 },
+                            { q: "По какому договору империя распалась на три части?", options: ["Верденский", "Мерсенский", "Ахенский", "Парижский"], correct: 0 },
+                            { q: "Какое современное государство возникло из Западно-Франкского королевства?", options: ["Германия", "Италия", "Франция", "Испания"], correct: 2 },
+                            { q: "Почему империя Карла распалась?", options: ["Из-за нашествия гуннов", "Из-за феодальной раздробленности", "Из-за эпидемии", "Из-за землетрясения"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "hist_3",
+                        title: "Раннее средневековье. Возникновение феодализма",
+                        description: "Феодализм — общественно-экономический строй, основанный на владении землей и зависимости крестьян. Возник в результате синтеза римских и варварских традиций. Основной ячейкой общества стало феодальное поместье (манор). Сеньор (феодал) владел землей и давал крестьянам наделы в пользование, защищал их. Крестьяне (вилланы) работали на земле сеньора (барщина), платили оброк (натуральный или денежный), несли различные повинности. Они были лично зависимы, но имели свое хозяйство. Феодалы также зависели друг от друга по системе сеньориально-вассальных отношений: король раздавал земли крупным феодалам, те — мелким. Вассал клялся в верности сеньору и нес военную службу. Натуральное хозяйство преобладало: производилось только то, что нужно для потребления. Церковь играла огромную роль, владея большими землями и влияя на все сферы жизни.",
+                        quiz: [
+                            { q: "На чем основан феодализм?", options: ["Торговле", "Владении землей", "Промышленности", "Науке"], correct: 1 },
+                            { q: "Как называлось феодальное поместье?", options: ["Полис", "Манор", "Цитадель", "Коммуна"], correct: 1 },
+                            { q: "Что такое барщина?", options: ["Денежный налог", "Работа на земле сеньора", "Военная служба", "Религиозный обряд"], correct: 1 },
+                            { q: "Кто такой вассал?", options: ["Крестьянин", "Король", "Зависимый феодал", "Купец"], correct: 2 },
+                            { q: "Какое хозяйство преобладало в раннем средневековье?", options: ["Товарное", "Натуральное", "Индустриальное", "Рыночное"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "hist_4",
+                        title: "Крестовые походы",
+                        description: "Крестовые походы (XI-XIII вв.) — военные экспедиции западноевропейских рыцарей на Восток, инициированные католической церковью. В 1095 г. папа Урбан II на Клермонском соборе призвал освободить Гроб Господень в Иерусалиме от 'неверных'. Причины: стремление рыцарей к земле и богатствам, желание церкви расширить влияние, перенаселение Европы. Первый поход (1096-1099) завершился взятием Иерусалима и созданием государств крестоносцев (Иерусалимское королевство, графство Эдесса, княжество Антиохия). Последующие походы были менее успешными. Салах ад-Дин (Саладин) в 1187 г. отвоевал Иерусалим. Третий поход (1189-1192) возглавили Ричард Львиное Сердце, Филипп Август и Фридрих Барбаросса. Четвертый поход (1204) завершился разграблением не Иерусалима, а христианского Константинополя. Итоги: гибель сотен тысяч людей, ослабление феодализма, развитие торговли между Востоком и Западом, культурный обмен.",
+                        quiz: [
+                            { q: "Кто призвал к первому крестовому походу?", options: ["Король Франции", "Папа Урбан II", "Император Германии", "Патриарх Константинополя"], correct: 1 },
+                            { q: "В каком году крестоносцы взяли Иерусалим?", options: ["1095", "1099", "1187", "1204"], correct: 1 },
+                            { q: "Кто отвоевал Иерусалим в 1187 г.?", options: ["Ричард Львиное Сердце", "Салах ад-Дин", "Фридрих Барбаросса", "Саладин"], correct: 1 },
+                            { q: "Что было разграблено в ходе Четвертого крестового похода?", options: ["Иерусалим", "Рим", "Константинополь", "Каир"], correct: 2 },
+                            { q: "Каков был один из положительных итогов крестовых походов?", options: ["Укрепление феодализма", "Развитие торговли", "Уничтожение рыцарства", "Закрытие границ"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "hist_5",
+                        title: "Культура Средневековья. Появление университетов",
+                        description: "Средневековая культура была теоцентричной: Бог и религия находились в центре мировоззрения. Главным центром культуры была церковь и монастыри. Монахи переписывали книги, сохраняя античное наследие. Образование было сосредоточено в монастырских и соборных школах. В XII-XIII вв. в Европе появляются первые университеты: Болонский (Италия, 1088), Парижский (Франция, ок. 1150), Оксфордский (Англия, 1167), Кембриджский (1209). Университеты имели факультеты: богословский, юридический, медицинский, философский. Студенты изучали 'семь свободных искусств': грамматику, риторику, диалектику (тривиум), арифметику, геометрию, астрономию, музыку (квадривиум). Возникает схоластика — философское учение, пытавшееся примирить веру и разум (Фома Аквинский). Развивается готическая архитектура (соборы Парижа, Кельна, Шартра) с витражами и высокими сводами. Появляется рыцарская литература (романы о Короле Артуре, Трубадуры).",
+                        quiz: [
+                            { q: "Какой университет считается старейшим в Европе?", options: ["Парижский", "Оксфордский", "Болонский", "Кембриджский"], correct: 2 },
+                            { q: "Что входило в 'тривиум'?", options: ["Арифметика, геометрия, музыка", "Грамматика, риторика, диалектика", "Богословие, право, медицина", "Философия, история, литература"], correct: 1 },
+                            { q: "Какой архитектурный стиль характерен для высоких соборов с витражами?", options: ["Романский", "Готический", "Ренессансный", "Барокко"], correct: 1 },
+                            { q: "Что такое схоластика?", options: ["Школьное расписание", "Учение, примиряющее веру и разум", "Рыцарский турнир", "Монашеский орден"], correct: 1 },
+                            { q: "Кто является представителем схоластики?", options: ["Фома Аквинский", "Данте", "Петрарка", "Бокаччо"], correct: 0 }
+                        ]
+                    }
+                ]
+            },
+            english: {
+                name: "Английский язык",
+                icon: "🇬🇧",
+                topics: [
+                    {
+                        id: "eng_1",
+                        title: "Present Perfect Tense",
+                        description: "Present Perfect (Настоящее совершенное время) используется для описания действий, которые произошли в неопределенное время в прошлом, но имеют результат в настоящем, или действия, которые начались в прошлом и продолжаются до сих пор. Формула: have/has + V3 (третья форма глагола, или Past Participle). Маркеры: just (только что), already (уже), yet (уже/еще - в отрицаниях и вопросах), ever (когда-либо), never (никогда), recently (недавно), so far (до сих пор), since (с тех пор как), for (в течение). Примеры: I have just finished my homework. (Я только что закончил домашку - результат налицо). She has never been to Paris. (Она никогда не была в Париже - опыт). They have lived here for 5 years. (Они живут здесь 5 лет - действие началось в прошлом и длится). Важно не путать с Past Simple: Past Simple указывает на конкретное время в прошлом (yesterday, in 2010), а Present Perfect — на результат или опыт без указания точного времени.",
+                        quiz: [
+                            { q: "Как образуется Present Perfect?", options: ["V-ed", "am/is/are + V-ing", "have/has + V3", "will + V"], correct: 2 },
+                            { q: "Какой маркер указывает на Present Perfect?", options: ["Yesterday", "Last year", "Just", "In 2015"], correct: 2 },
+                            { q: "Выберите правильное предложение:", options: ["I have saw this movie.", "I have seen this movie.", "I seen this movie.", "I has seen this movie."], correct: 1 },
+                            { q: "Когда используется Present Perfect?", options: ["Для действия в конкретное время в прошлом", "Для действия с результатом в настоящем", "Для регулярных действий", "Для действий в будущем"], correct: 1 },
+                            { q: "Как переводится 'She has already left'?", options: ["Она ушла вчера.", "Она уже ушла.", "Она уходит.", "Она уйдет."], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "eng_2",
+                        title: "Passive Voice (Страдательный залог)",
+                        description: "Passive Voice (Страдательный залог) используется, когда действие направлено на субъект, и нам важно, что делают с предметом, а не кто это делает. Формула: to be + V3 (Past Participle). Глагол 'to be' изменяется по временам: Present Simple (am/is/are + V3), Past Simple (was/were + V3), Present Perfect (have/has been + V3), Future Simple (will be + V3). Примеры: Active: They build houses. -> Passive: Houses are built (by them). Active: Someone stole my bike. -> Passive: My bike was stolen. Active: They have finished the project. -> Passive: The project has been finished. Если исполнитель действия не важен или неизвестен, его можно не указывать (by phrase). Passive Voice часто используется в новостях, научных текстах и официальных документах, где фокус на объекте действия.",
+                        quiz: [
+                            { q: "Как образуется Passive Voice?", options: ["have + V3", "to be + V3", "to be + V-ing", "will + V"], correct: 1 },
+                            { q: "Как будет в Passive: 'They write letters'?", options: ["Letters are written.", "Letters is written.", "Letters wrote.", "Letters are write."], correct: 0 },
+                            { q: "В каком времени 'to be' для Past Simple Passive?", options: ["am/is/are", "was/were", "will be", "have been"], correct: 1 },
+                            { q: "Когда используется Passive Voice?", options: ["Когда важно, кто делает действие", "Когда важно, что делают с предметом", "Только в вопросах", "Только в прошедшем времени"], correct: 1 },
+                            { q: "Выберите правильное предложение в Passive:", options: ["The book was read by me.", "The book read by me.", "The book is read by me yesterday.", "The book has read by me."], correct: 0 }
+                        ]
+                    },
+                    {
+                        id: "eng_3",
+                        title: "Conditionals (Условные предложения)",
+                        description: "Условные предложения (Conditionals) описывают ситуации, где одно действие зависит от другого. В английском есть 4 основных типа. Zero Conditional (Нулевой тип): общие истины, законы природы. Формула: If + Present Simple, Present Simple. (If you heat ice, it melts). First Conditional (Первый тип): реальные условия в будущем. Формула: If + Present Simple, Future Simple (will + V). (If it rains, I will stay at home). Second Conditional (Второй тип): нереальные или маловероятные условия в настоящем/будущем. Формула: If + Past Simple, would + V. (If I had a million dollars, I would buy a house). *Примечание: с глаголом to be используется were для всех лиц (If I were you...)*. Third Conditional (Третий тип): нереальные условия в прошлом (сожаления). Формула: If + Past Perfect (had + V3), would have + V3. (If I had studied harder, I would have passed the exam). Понимание типов помогает точно выражать мысли о вероятности и последствиях.",
+                        quiz: [
+                            { q: "Какая формула у First Conditional?", options: ["If + Present, Present", "If + Present, Future (will)", "If + Past, would", "If + Past Perfect, would have"], correct: 1 },
+                            { q: "Какой тип используется для общих истин?", options: ["Zero", "First", "Second", "Third"], correct: 0 },
+                            { q: "Выберите правильное предложение (Second Conditional):", options: ["If I win, I will buy a car.", "If I won, I would buy a car.", "If I had won, I would have bought a car.", "If I win, I buy a car."], correct: 1 },
+                            { q: "Что выражает Third Conditional?", options: ["Реальные условия", "Общие истины", "Нереальные условия в прошлом", "Советы"], correct: 2 },
+                            { q: "Как правильно сказать 'Если бы я был тобой...'?", options: ["If I was you...", "If I were you...", "If I am you...", "If I will be you..."], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "eng_4",
+                        title: "Reported Speech (Косвенная речь)",
+                        description: "Reported Speech (Косвенная речь) используется для передачи чужих слов без прямого цитирования. При переходе от прямой речи (Direct Speech) к косвенной, если вводное слово в прошедшем времени (He said, She told), происходит 'сдвиг времен' (Backshift): Present Simple -> Past Simple, Present Continuous -> Past Continuous, Past Simple -> Past Perfect, Future (will) -> would. Местоимения и указатели времени/места также меняются (I -> he/she, here -> there, today -> that day, tomorrow -> the next day). Примеры: 'I am tired,' he said. -> He said that he was tired. 'I will call you,' she said. -> She said that she would call me. Если вводное слово в настоящем или будущем (He says), времена не меняются. Для вопросов в косвенной речи используется прямой порядок слов: He asked where I lived (не 'where did I live'). Для повелений используется инфинитив: He told me to open the door.",
+                        quiz: [
+                            { q: "Что происходит с временами при сдвиге (Backshift)?", options: ["Они не меняются", "Они сдвигаются на шаг назад в прошлое", "Они меняются на будущее", "Они становятся в Perfect"], correct: 1 },
+                            { q: "Как передать 'I am happy', he said?", options: ["He said I am happy.", "He said he was happy.", "He said he is happy.", "He said he will be happy."], correct: 1 },
+                            { q: "Как передается Future Simple в косвенной речи?", options: ["Will", "Would", "Had", "Was"], correct: 1 },
+                            { q: "Какой порядок слов в косвенном вопросе?", options: ["Вопросительный", "Прямой", "Обратный", "Любой"], correct: 1 },
+                            { q: "Как передать 'Close the door', he said?", options: ["He said close the door.", "He told me to close the door.", "He said me close the door.", "He told me close the door."], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "eng_5",
+                        title: "Vocabulary: Travel and Transport",
+                        description: "Тема 'Путешествия и транспорт' включает лексику, необходимую для описания поездок, видов транспорта и действий в аэропорту/на вокзале. Виды транспорта: plane (самолет), train (поезд), car (машина), bus (автобус), ship (корабль), ferry (паром), underground/subway (метро), tram (трамвай). Действия: to book a ticket (забронировать билет), to pack luggage (собирать багаж), to check in (регистрироваться), to board (садиться на борт), to take off (взлетать), to land (приземляться), to arrive (прибывать), to depart (отбывать). В аэропорту: passport (паспорт), boarding pass (посадочный талон), gate (выход на посадку), customs (таможня), luggage claim (получение багажа), delay (задержка), flight (рейс). Полезные фразы: 'What time does the flight depart?' (Во сколько вылет?), 'Where is the boarding gate?' (Где выход на посадку?), 'I'd like to book a single/return ticket' (Хочу забронировать билет в один конец/туда-обратно).",
+                        quiz: [
+                            { q: "Как по-английски 'забронировать билет'?", options: ["To buy a ticket", "To book a ticket", "To take a ticket", "To get a ticket"], correct: 1 },
+                            { q: "Что означает 'boarding pass'?", options: ["Паспорт", "Посадочный талон", "Багаж", "Таможня"], correct: 1 },
+                            { q: "Как сказать 'самолет взлетает'?", options: ["The plane lands.", "The plane takes off.", "The plane departs.", "The plane arrives."], correct: 1 },
+                            { q: "Что такое 'luggage claim'?", options: ["Покупка билета", "Регистрация", "Получение багажа", "Таможня"], correct: 2 },
+                            { q: "Как спросить 'Где выход на посадку?'?", options: ["Where is the gate?", "Where is the customs?", "Where is the luggage?", "Where is the passport?"], correct: 0 }
+                        ]
+                    }
+                ]
+            },
+            art: {
+                name: "ИЗО",
+                icon: "🎨",
+                topics: [
+                    {
+                        id: "art_1",
+                        title: "Перспектива в рисунке",
+                        description: "Перспектива — это способ изображения трехмерных объектов на двухмерной плоскости (листе бумаги) для передачи их пространственного положения и объемности. Линейная перспектива основана на том, что параллельные линии, уходящие вдаль, кажутся сходящимися в одной точке на горизонте (точка схода). Линия горизонта находится на уровне глаз зрителя. Предметы, расположенные дальше, кажутся меньше по размеру и менее контрастными. Воздушная перспектива передает глубину с помощью цвета и тона: далекие предметы имеют более холодные, голубоватые оттенки и светлее, чем ближние. Чтобы нарисовать куб в перспективе, сначала находят линию горизонта и точку схода. Затем рисуют ближайшую грань куба (квадрат). От углов этого квадрата проводят линии к точке схода. Заднюю грань рисуют меньше и соединяют с передней. Понимание перспективы необходимо для создания реалистичных изображений пейзажей, интерьеров и архитектуры.",
+                        quiz: [
+                            { q: "Что такое перспектива?", options: ["Способ раскраски", "Способ изображения 3D объектов на 2D плоскости", "Название кисти", "Вид краски"], correct: 1 },
+                            { q: "Где находится точка схода в линейной перспективе?", options: ["В центре листа", "На линии горизонта", "Внизу листа", "В углу"], correct: 1 },
+                            { q: "Как меняются параллельные линии, уходящие вдаль?", options: ["Расходятся", "Остаются параллельными", "Сходятся в одной точке", "Исчезают"], correct: 2 },
+                            { q: "Какие оттенки имеют далекие предметы в воздушной перспективе?", options: ["Теплые", "Холодные", "Черные", "Ярко-красные"], correct: 1 },
+                            { q: "На каком уровне находится линия горизонта?", options: ["Всегда внизу", "Всегда вверху", "На уровне глаз зрителя", "Посередине листа"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "art_2",
+                        title: "Цветоведение. Теплые и холодные цвета",
+                        description: "Цвет — одно из главных средств выразительности в изобразительном искусстве. Цветовой круг состоит из основных (красный, желтый, синий), составных (оранжевый, зеленый, фиолетовый) и дополнительных цветов (находящихся напротив друг друга в круге, например, красный и зеленый). Теплые цвета (красный, оранжевый, желтый) ассоциируются с огнем, солнцем, создают ощущение тепла, активности, приближают предметы. Холодные цвета (синий, голубой, фиолетовый, зеленый) ассоциируются с водой, льдом, создают ощущение прохлады, спокойствия, отдаляют предметы. Контраст теплого и холодного используется для создания глубины и объема. Насыщенность цвета (интенсивность) и тон (светлота/темнота) также влияют на восприятие. Смешение красок: при смешении основных получаются составные. Белый цвет осветляет (добавляет белила), черный — делает темнее. Понимание цветоведения помогает создавать гармоничные и выразительные композиции.",
+                        quiz: [
+                            { q: "Какие цвета считаются основными?", options: ["Зеленый, оранжевый, фиолетовый", "Красный, желтый, синий", "Черный, белый, серый", "Коричневый, розовый, золотой"], correct: 1 },
+                            { q: "Какие цвета относятся к теплым?", options: ["Синий, зеленый", "Красный, оранжевый, желтый", "Фиолетовый, голубой", "Черный, белый"], correct: 1 },
+                            { q: "Какой эффект создают холодные цвета?", options: ["Приближают предметы", "Создают ощущение тепла", "Отдаляют предметы", "Делают картину темнее"], correct: 2 },
+                            { q: "Что такое дополнительные цвета?", options: ["Цвета, стоящие рядом в круге", "Цвета, находящиеся напротив друг друга", "Только теплые цвета", "Только черные цвета"], correct: 1 },
+                            { q: "Как получить составной цвет?", options: ["Смешать два основных", "Добавить белый", "Добавить черный", "Ничего не делать"], correct: 0 }
+                        ]
+                    },
+                    {
+                        id: "art_3",
+                        title: "Жанры изобразительного искусства",
+                        description: "Жанры в изобразительном искусстве — это исторически сложившиеся группы произведений, объединенных общими темами и объектами изображения. Основные жанры: Портрет — изображение человека или группы людей с передачей их характера и внешнего сходства (бывает парадный, камерный, групповой). Пейзаж — изображение природы (сельский, городской, морской, индустриальный). Натюрморт — изображение неодушевленных предметов (цветы, фрукты, посуда, книги). Бытовой жанр — сцены из повседневной жизни людей. Исторический жанр — события прошлого. Батальный жанр — сцены сражений и войн. Анималистический жанр — изображение животных. Маринистика — морской пейзаж. Каждый жанр имеет свои особенности и требует от художника специфических навыков. Произведения могут сочетать несколько жанров (например, портрет на фоне пейзажа). Выбор жанра зависит от замысла художника и интересов зрителя.",
+                        quiz: [
+                            { q: "Что изображается в натюрморте?", options: ["Природа", "Человек", "Неодушевленные предметы", "Животные"], correct: 2 },
+                            { q: "Как называется жанр, изображающий природу?", options: ["Портрет", "Пейзаж", "Натюрморт", "Бытовой"], correct: 1 },
+                            { q: "Что такое анималистический жанр?", options: ["Изображение цветов", "Изображение животных", "Изображение моря", "Изображение битв"], correct: 1 },
+                            { q: "Какой жанр посвящен сценам сражений?", options: ["Исторический", "Батальный", "Маринистика", "Бытовой"], correct: 1 },
+                            { q: "Что является главным в портрете?", options: ["Пейзаж на фоне", "Передача характера и сходства", "Изображение предметов", "Абстрактные формы"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "art_4",
+                        title: "Композиция в рисунке",
+                        description: "Композиция (от лат. 'составление, связывание') — это построение художественного произведения, расположение и связь его главных частей. Это основа любого изображения, определяющая его целостность и выразительность. Правила композиции: 1. Центр композиции (композиционный центр) — место, куда в первую очередь смотрит зритель. Он не обязательно находится в геометрическом центре, чаще смещен (правило золотого сечения). 2. Равновесие — визуальный баланс элементов (тяжелые, темные пятна уравновешиваются светлыми или большими по размеру). 3. Ритм — повторение элементов, создающее динамику или спокойствие. 4. Контраст — противопоставление светлого и темного, большого и малого, теплого и холодного для выделения главного. 5. Целостность — все элементы должны быть связаны и подчинены единому замыслу. Композиция может быть статичной (устойчивой, симметричной) или динамичной (напряженной, асимметричной).",
+                        quiz: [
+                            { q: "Что такое композиция?", options: ["Набор красок", "Расположение и связь частей произведения", "Размер листа", "Техника рисования"], correct: 1 },
+                            { q: "Где чаще всего находится центр композиции?", options: ["В левом углу", "В правом углу", "Смещен от геометрического центра", "Строго по центру"], correct: 2 },
+                            { q: "Что такое контраст в композиции?", options: ["Повторение элементов", "Противопоставление элементов", "Равномерное распределение", "Симметрия"], correct: 1 },
+                            { q: "Какая композиция называется динамичной?", options: ["Симметричная", "Асимметричная, напряженная", "Статичная", "Уравновешенная"], correct: 1 },
+                            { q: "Что такое ритм в композиции?", options: ["Цветовая гамма", "Повторение элементов", "Размер листа", "Тема рисунка"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "art_5",
+                        title: "Великие художники и их шедевры",
+                        description: "Мировое изобразительное искусство знает множество великих мастеров, чьи работы стали символами своих эпох. Леонардо да Винчи (эпоха Возрождения) — 'Мона Лиза' (Джоконда), 'Тайная вечеря'. Микеланджело — роспись Сикстинской капеллы, скульптура 'Давид'. Рембрандт (Голландия XVII в.) — мастер света и тени, 'Ночной дозор'. Импрессионисты (Клод Моне, Пьер-Огюст Ренуар) стремились запечатлеть мимолетные впечатления, игру света ('Впечатление. Восходящее солнце' Моне). Винсент Ван Гог (постимпрессионизм) — экспрессивные, эмоциональные работы ('Звездная ночь', 'Подсолнухи'). Пабло Пикассо (кубизм) — 'Авиньонские девицы', 'Герника'. Русские художники: И. Шишкин ('Утро в сосновом лесу'), И. Левитан ('Золотая осень'), И. Репин ('Запорожцы пишут письмо турецкому султану'), В. Васнецов ('Богатыри'). Изучение шедевров развивает эстетический вкус и понимание истории культуры.",
+                        quiz: [
+                            { q: "Кто написал 'Мону Лизу'?", options: ["Микеланджело", "Леонардо да Винчи", "Рафаэль", "Рембрандт"], correct: 1 },
+                            { q: "К какому направлению относился Клод Моне?", options: ["Кубизм", "Импрессионизм", "Реализм", "Барокко"], correct: 1 },
+                            { q: "Кто написал картину 'Утро в сосновом лесу'?", options: ["И. Левитан", "И. Шишкин", "И. Репин", "В. Васнецов"], correct: 1 },
+                            { q: "Какой стиль характеризует творчество Пабло Пикассо?", options: ["Импрессионизм", "Кубизм", "Ренессанс", "Реализм"], correct: 1 },
+                            { q: "Кто является автором 'Звездной ночи'?", options: ["Клод Моне", "Винсент Ван Гог", "Пабло Пикассо", "Сальвадор Дали"], correct: 1 }
+                        ]
+                    }
+                ]
+            },
+            tech: {
+                name: "Технология",
+                icon: "🛠️",
+                topics: [
+                    {
+                        id: "tech_1",
+                        title: "Кулинария. Бутерброды и горячие напитки",
+                        description: "Кулинария — искусство приготовления пищи. Бутерброды — простые и быстрые блюда, состоящие из одного или нескольких продуктов, уложенных на хлеб. Виды бутербродов: открытые (продукты видны сверху), закрытые (два куска хлеба с начинкой), закусочные (канапе — маленькие открытые бутерброды). Требования к приготовлению: свежесть продуктов, эстетичный внешний вид, сочетаемость вкусов, правильная нарезка (хлеб режут вдоль или поперек, колбасу/сыр — тонкими ломтиками). Горячие напитки: чай, кофе, какао. Чай содержит тонизирующие вещества, его заваривают горячей, но не кипящей водой (80-90°C для зеленого, 95-100°C для черного). Кофе готовят в кофеварке или турке. Какао варят на молоке. Правила сервировки: чашка ставится на блюдце, ручка чашки смотрит вправо, ложка кладется на блюдце справа от чашки. Соблюдение санитарных норм (мытье рук, чистая посуда) обязательно.",
+                        quiz: [
+                            { q: "Что такое канапе?", options: ["Закрытый бутерброд", "Маленький открытый бутерброд", "Горячий напиток", "Вид хлеба"], correct: 1 },
+                            { q: "Какой температурой воды лучше заваривать зеленый чай?", options: ["100°C", "80-90°C", "50-60°C", "40-50°C"], correct: 1 },
+                            { q: "Куда ставится ручка чашки при сервировке?", options: ["Влево", "Вправо", "К себе", "От себя"], correct: 1 },
+                            { q: "Какое главное требование к бутербродам?", options: ["Сложность приготовления", "Свежесть и сочетаемость продуктов", "Большой размер", "Долгое хранение"], correct: 1 },
+                            { q: "В чем варят традиционный кофе по-восточному?", options: ["В чайнике", "В турке", "В микроволновке", "В кастрюле"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "tech_2",
+                        title: "Конструирование и моделирование одежды",
+                        description: "Конструирование одежды — это процесс создания чертежа выкройки изделия по заданным размерам. Моделирование — изменение базовой выкройки для создания нового дизайна (изменение длины, формы воротника, карманов). Основные этапы: 1. Снятие мерок (Обхват талии ОТ, Обхват бедер ОБ, Длина изделия ДИ, Длина плеча ДП и др.). Мерки снимают сантиметровой лентой, записывают в половинном размере (кроме длины). 2. Построение чертежа (сетки, основных линий, контуров деталей) на миллиметровой бумаге или кальке. 3. Моделирование (перенос вытачек, добавление складок, изменение формы). 4. Раскрой (перенос выкройки на ткань с учетом припусков на швы и направления долевой нити). Швейные машины бывают с ручным, ножным и электрическим приводом. Основные операции: сметывание, стачивание, обметывание, утюжка. Соблюдение техники безопасности при работе с ножницами, иглами и швейной машиной обязательно.",
+                        quiz: [
+                            { q: "Что такое конструирование одежды?", options: ["Процесс шитья", "Создание чертежа выкройки", "Раскрой ткани", "Декорирование"], correct: 1 },
+                            { q: "В каком размере записываются мерки обхватов?", options: ["В полном", "В половинном", "В тройном", "В дюймах"], correct: 1 },
+                            { q: "Что такое моделирование одежды?", options: ["Снятие мерок", "Изменение базовой выкройки", "Стирка изделия", "Продажа одежды"], correct: 1 },
+                            { q: "Что нужно учитывать при раскрое ткани?", options: ["Только цвет", "Припуски на швы и долевую нить", "Только размер", "Только фасон"], correct: 1 },
+                            { q: "Какой инструмент используется для снятия мерок?", options: ["Линейка", "Сантиметровая лента", "Угольник", "Циркуль"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "tech_3",
+                        title: "Швейное дело. Ручные и машинные швы",
+                        description: "Швейные швы соединяют детали изделия или обрабатывают его края. Ручные швы: сметочный (временное соединение деталей, стежки косые или прямые), копировальный (перенос линий контура на парную деталь), обметочный (предотвращение осыпания края). Машинные швы делятся на соединительные и краевые. Соединительные: стачной шов (основной, соединяет детали, бывает вразутюжку и заутюжку), запошивочный (очень прочный, используется в джинсах, белье). Краевые: вподгибку с открытым или закрытым срезом (для обработки низа изделия), обметочный (на оверлоке или зигзагом). Стачивание — основное машинное соединение. Перед стачиванием детали сметывают. После стачивания швы разутюживают (разглаживают в разные стороны) или заутюживают (на одну сторону). Качество шва зависит от натяжения нити, выбора иглы и толщины ткани. В конце работы все нитки закрепляют и срезают.",
+                        quiz: [
+                            { q: "Для чего используется сметочный шов?", options: ["Для постоянного соединения", "Для временного соединения деталей", "Для украшения", "Для разрезания ткани"], correct: 1 },
+                            { q: "Какой шов является основным соединительным машинным швом?", options: ["Обметочный", "Стачной", "Копировальный", "Вподгибку"], correct: 1 },
+                            { q: "Что такое заутюживание шва?", options: ["Разглаживание в разные стороны", "Заглаживание на одну сторону", "Срезание ниток", "Сметывание"], correct: 1 },
+                            { q: "Где часто используется запошивочный шов?", options: ["В блузках", "В джинсах и белье", "В шифоновых платьях", "В кружевах"], correct: 1 },
+                            { q: "Что нужно сделать перед стачиванием деталей?", options: ["Их постирать", "Их сметать", "Их покрасить", "Их разрезать"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "tech_4",
+                        title: "Интерьер жилого дома. Зонирование пространства",
+                        description: "Интерьер — это внутреннее пространство помещения, его устройство и оформление. Главная задача дизайна интерьера — создать удобную, функциональную и эстетичную среду для жизни. Зонирование — разделение общего пространства на функциональные зоны (место для отдыха, работы, сна, приема пищи). В кухне выделяют зоны: приготовления пищи (плита, стол), мойки (раковина), хранения (холодильник, шкафы). Они должны образовывать 'рабочий треугольник' для удобства. В гостиной — зона отдыха (диван, кресла), зона приема гостей, иногда рабочая зона. В спальне — зона сна (кровать), зона хранения (шкаф), туалетный столик. Принципы организации интерьера: эргономичность (удобство для человека), освещенность (естественное и искусственное освещение), цветовая гамма (светлые тона расширяют пространство, темные — делают уютнее), стиль (классический, современный, минимализм, прованс). Декор (картины, ковры, растения) завершает образ помещения.",
+                        quiz: [
+                            { q: "Что такое интерьер?", options: ["Фасад здания", "Внутреннее пространство помещения", "Ландшафт двора", "Крыша дома"], correct: 1 },
+                            { q: "Что такое зонирование?", options: ["Покраска стен", "Разделение пространства на функциональные зоны", "Выбор мебели", "Уборка комнаты"], correct: 1 },
+                            { q: "Какой принцип важен для удобства в интерьере?", options: ["Эргономичность", "Сложность", "Минимум света", "Темные стены"], correct: 0 },
+                            { q: "Как светлые тона влияют на пространство?", options: ["Уменьшают его", "Расширяют его", "Делают темнее", "Не влияют"], correct: 1 },
+                            { q: "Что образуют плита, раковина и холодильник на кухне?", options: ["Прямоугольник", "Рабочий треугольник", "Круг", "Линию"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "tech_5",
+                        title: "Сельскохозяйственные работы. Выращивание растений",
+                        description: "Сельское хозяйство обеспечивает человека продуктами питания и сырьем. Выращивание растений включает несколько этапов: подготовка почвы, посев, уход за растениями, сбор урожая. Почву готовят осенью: перекапывают, вносят удобрения (органические — навоз, компост; минеральные). Весной почву рыхлят и боронуют для сохранения влаги. Посев семян проводят в оптимальные сроки, соблюдая глубину заделки (зависит от размера семян и типа почвы) и нормы высева. Уход за растениями включает: полив (особенно важен в засушливых регионах), прополку (удаление сорняков), рыхление (улучшает доступ воздуха к корням), подкормку, защиту от вредителей и болезней. Сбор урожая проводят в сроки биологической спелости. Овощи и фрукты хранят в прохладных, проветриваемых помещениях. Зерно сушат и хранят в элеваторах. Современные технологии (теплицы, капельный полив, гидропоника) позволяют выращивать растения круглый год и в неблагоприятных условиях.",
+                        quiz: [
+                            { q: "Что вносят в почву осенью?", options: ["Только воду", "Удобрения", "Песок", "Камни"], correct: 1 },
+                            { q: "От чего зависит глубина заделки семян?", options: ["От цвета семян", "От размера семян и типа почвы", "От дня недели", "От температуры воздуха"], correct: 1 },
+                            { q: "Для чего нужно рыхление почвы?", options: ["Для красоты", "Для улучшения доступа воздуха к корням", "Для увеличения размера семян", "Для уничтожения насекомых"], correct: 1 },
+                            { q: "Что такое прополка?", options: ["Полив растений", "Удаление сорняков", "Сбор урожая", "Посев семян"], correct: 1 },
+                            { q: "Какая технология позволяет выращивать растения без почвы?", options: ["Теплица", "Гидропоника", "Капельный полив", "Боронование"], correct: 1 }
+                        ]
+                    }
+                ]
+            },
+            biology: {
+                name: "Биология",
+                icon: "🌿",
+                topics: [
+                    {
+                        id: "bio_1",
+                        title: "Клетка — основа живого",
+                        description: "Клетка — это элементарная структурная и функциональная единица всех живых организмов (кроме вирусов). Все живые организмы состоят из клеток: бактерии — из одной, растения и животные — из миллионов. Клетка имеет мембрану (оболочку), которая отделяет ее от внешней среды и регулирует обмен веществ. Внутри клетки находится цитоплазма — полужидкая среда, в которой расположены органоиды. Ядро — главный органоид, хранит наследственную информацию (ДНК) и управляет жизнедеятельностью клетки. Митохондрии — 'энергетические станции', обеспечивают клетку энергией. Рибосомы участвуют в синтезе белка. Эндоплазматическая сеть (ЭПС) транспортирует вещества. Аппарат Гольджи накапливает и выводит вещества. Лизосомы осуществляют внутриклеточное пищеварение. У растительной клетки есть дополнительные структуры: клеточная стенка (из целлюлозы) для опоры, вакуоли (с клеточным соком) для хранения и поддержания давления, пластиды (хлоропласты — для фотосинтеза, хромопласты — для окраски, лейкопласты — для хранения крахмала).",
+                        quiz: [
+                            { q: "Что является основной единицей живого?", options: ["Атом", "Молекула", "Клетка", "Ткань"], correct: 2 },
+                            { q: "Какой органоид хранит наследственную информацию?", options: ["Митохондрия", "Рибосома", "Ядро", "Лизосома"], correct: 2 },
+                            { q: "Что есть только у растительной клетки?", options: ["Ядро", "Митохондрии", "Клеточная стенка из целлюлозы", "Цитоплазма"], correct: 2 },
+                            { q: "Какие органоиды называют 'энергетическими станциями'?", options: ["Рибосомы", "Лизосомы", "Митохондрии", "Вакуоли"], correct: 2 },
+                            { q: "В каких органоидах происходит фотосинтез?", options: ["В митохондриях", "В хлоропластах", "В рибосомах", "В лизосомах"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "bio_2",
+                        title: "Ткани и органы растений",
+                        description: "Ткань — это группа клеток, сходных по строению и выполняющих одинаковые функции. У растений выделяют несколько типов тканей. Образовательная (меристема) — состоит из мелких клеток с крупными ядрами, способных к постоянному делению (обеспечивает рост). Покровная (эпидермис, пробка, корка) — защищает от высыхания, перепадов температур и повреждений. Проводящая — транспортирует вещества. Ксилема (сосуды) проводит воду и минеральные вещества от корней к листьям. Флоэма (ситовидные трубки) проводит органические вещества от листьев ко всем органам. Механическая — придает опору и прочность (лубяные и древесные волокна). Основная — заполняет пространство между другими тканями. Паренхима листа (фотосинтез), запасающая паренхима (корни, семена). Орган — это часть организма, выполняющая определенную функцию. Вегетативные органы (корень, побег) обеспечивают питание и рост. Генеративные органы (цветок, плод, семя) обеспечивают размножение.",
+                        quiz: [
+                            { q: "Что такое ткань?", options: ["Одна клетка", "Группа клеток с одинаковыми функциями", "Орган", "Организм"], correct: 1 },
+                            { q: "Какая ткань обеспечивает рост растения?", options: ["Покровная", "Проводящая", "Образовательная", "Механическая"], correct: 2 },
+                            { q: "Что проводит ксилема?", options: ["Органические вещества", "Воду и минеральные вещества", "Кислород", "Углекислый газ"], correct: 1 },
+                            { q: "Какой орган является генеративным?", options: ["Корень", "Лист", "Стебель", "Цветок"], correct: 3 },
+                            { q: "Какая функция у покровной ткани?", options: ["Фотосинтез", "Защита", "Проведение веществ", "Опора"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "bio_3",
+                        title: "Фотосинтез и дыхание растений",
+                        description: "Фотосинтез — процесс образования органических веществ (глюкозы) из неорганических (воды и углекислого газа) в хлоропластах на свету с выделением кислорода. Уравнение: 6CO2 + 6H2O + свет -> C6H12O6 + 6O2. Это уникальный процесс, обеспечивающий жизнь на Земле: растения создают органику для себя и других организмов, выделяют кислород для дыхания, поглощают углекислый газ. Дыхание — процесс окисления органических веществ с освобождением энергии, необходимой для жизнедеятельности. Происходит во всех живых клетках (в митохондриях) круглосуточно. Уравнение: C6H12O6 + 6O2 -> 6CO2 + 6H2O + энергия. Растения поглощают кислород и выделяют углекислый газ при дыхании. Таким образом, днем в листьях идут два процесса: фотосинтез (преобладает) и дыхание, а ночью — только дыхание. Интенсивность фотосинтеза зависит от света, температуры, концентрации CO2 и наличия воды. Минеральное питание (поглощение солей из почвы) также необходимо для синтеза веществ.",
+                        quiz: [
+                            { q: "Что образуется в процессе фотосинтеза?", options: ["Углекислый газ и вода", "Глюкоза и кислород", "Только кислород", "Только вода"], correct: 1 },
+                            { q: "В каких органоидах происходит фотосинтез?", options: ["В митохондриях", "В хлоропластах", "В ядре", "В рибосомах"], correct: 1 },
+                            { q: "Когда растения дышат?", options: ["Только днем", "Только ночью", "Круглосуточно", "Только зимой"], correct: 2 },
+                            { q: "Какой газ выделяют растения при дыхании?", options: ["Кислород", "Углекислый газ", "Азот", "Водород"], correct: 1 },
+                            { q: "Что необходимо для фотосинтеза?", options: ["Только вода", "Свет, вода, углекислый газ", "Только свет", "Кислород и глюкоза"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "bio_4",
+                        title: "Размножение и развитие растений",
+                        description: "Размножение — свойство организмов увеличивать свое число. У растений бывает бесполое и половое. Бесполое размножение: вегетативное (частями тела) и спорами. Вегетативное размножение осуществляется корнем, стеблем, листом. Примеры: корневищем (пырей), луковицей (лук, тюльпан), клубнем (картофель), усами (земляника), черенками (смородина, роза), отводками, прививкой. Половое размножение связано с образованием гамет (половых клеток) и их слиянием. У цветковых растений гаметы образуются в цветке: мужские (спермии) в пыльце, женские (яйцеклетка) в семязачатке. Опыление — перенос пыльцы на рыльце пестика (ветром, насекомыми, водой). После опыления происходит двойное оплодотворение: один спермий сливается с яйцеклеткой (образуется зигота -> зародыш), другой — с центральной клеткой (образуется эндосперм -> запас питательных веществ). Из семязачатка развивается семя, из завязи — плод. Семя защищает зародыш и обеспечивает его питанием.",
+                        quiz: [
+                            { q: "Что такое вегетативное размножение?", options: ["С помощью семян", "С помощью спор", "С помощью частей тела (корня, стебля)", "С помощью гамет"], correct: 2 },
+                            { q: "Что такое опыление?", options: ["Слияние гамет", "Перенос пыльцы на рыльце пестика", "Созревание плода", "Прорастание семени"], correct: 1 },
+                            { q: "Что образуется из зиготы?", options: ["Эндосперм", "Плод", "Зародыш", "Кожура"], correct: 2 },
+                            { q: "Что такое двойное оплодотворение?", options: ["Слияние двух спермиев", "Слияние одного спермия с яйцеклеткой и другого с центральной клеткой", "Два раза подряд", "Оплодотворение двух цветков"], correct: 1 },
+                            { q: "Из чего развивается плод?", options: ["Из лепестков", "Из тычинок", "Из завязи", "Из корней"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "bio_5",
+                        title: "Систематика растений. Основные семейства",
+                        description: "Систематика (таксономия) — наука о классификации организмов. Основные таксоны: Царство -> Отдел -> Класс -> Семейство -> Род -> Вид. Растения делят на два отдела: Высшие (имеют ткани и органы) и Низшие (водоросли, не имеют тканей). Высшие делятся на споровые (мхи, папоротники, хвощи, плауны) и семенные (голосеменные и покрытосеменные/цветковые). Покрытосеменные — самый многочисленный отдел, делятся на классы Однодольные и Двудольные. Признаки двудольных: две семядоли в семени, сетчатое жилечение листьев, стержневая корневая система, камбий в стебле, цветок кратен 4 или 5. Признаки однодольных: одна семядоля, параллельное или дуговое жилечение, мочковатая корневая система, нет камбия, цветок кратен 3. Важные семейства двудольных: Крестоцветные (капуста, редис), Розоцветные (яблоня, шиповник), Бобовые (горох, клевер), Пасленовые (томат, картофель), Сложноцветные (подсолнечник, ромашка). Семейство однодольных: Злаки (пшеница, рожь), Лилейные (лук, тюльпан).",
+                        quiz: [
+                            { q: "Какой таксон является самым крупным?", options: ["Вид", "Род", "Семейство", "Царство"], correct: 3 },
+                            { q: "Сколько семядолей в семени двудольных растений?", options: ["Одна", "Две", "Три", "Четыре"], correct: 1 },
+                            { q: "Какое жилечение листьев характерно для однодольных?", options: ["Сетчатое", "Пальчатое", "Параллельное или дуговое", "Перистое"], correct: 2 },
+                            { q: "К какому семейству относится картофель?", options: ["Розоцветные", "Пасленовые", "Бобовые", "Злаки"], correct: 1 },
+                            { q: "Какой признак есть у двудольных, но нет у однодольных?", options: ["Мочковатая корневая система", "Камбий в стебле", "Параллельное жиление", "Цветок кратен 3"], correct: 1 }
+                        ]
+                    }
+                ]
+            },
+            geography: {
+                name: "География",
+                icon: "🌍",
+                topics: [
+                    {
+                        id: "geo_1",
+                        title: "Земная кора и литосфера",
+                        description: "Литосфера — твердая оболочка Земли, включающая земную кору и верхнюю часть мантии. Земная кора делится на континентальную (под материками, толщиной 30-70 км, 3 слоя: осадочный, гранитный, базальтовый) и океаническую (под океанами, толщиной 5-10 км, 2 слоя: осадочный и базальтовый). Литосферные плиты — огромные блоки литосферы, которые медленно движутся (несколько см в год) по пластичному слою мантии (астеносфере). Границы плит бывают трех типов: расходящиеся (срединно-океанические хребты, где образуется новая кора), сходящиеся (зоны субдукции, где одна плита ныряет под другую, образуя горы и вулканы), скользящие (разломы, где плиты трутся друг о друга, вызывая землетрясения). Рельеф Земли формируется внутренними (текучие движения, вулканизм, землетрясения) и внешними (выветривание, работа воды, ветра, ледников) процессами. Основные формы рельефа: горы, равнины, плоскогорья, впадины.",
+                        quiz: [
+                            { q: "Что такое литосфера?", options: ["Водная оболочка", "Воздушная оболочка", "Твердая оболочка Земли", "Живая оболочка"], correct: 2 },
+                            { q: "Какова толщина океанической коры?", options: ["30-70 км", "5-10 км", "100-200 км", "1-2 км"], correct: 1 },
+                            { q: "Что происходит на границах расходящихся плит?", options: ["Образуются горы", "Образуется новая кора", "Происходят только землетрясения", "Ничего не происходит"], correct: 1 },
+                            { q: "Какие процессы относятся к внешним?", options: ["Вулканизм", "Землетрясения", "Выветривание", "Движение плит"], correct: 2 },
+                            { q: "Что такое астеносфера?", options: ["Твердый слой коры", "Пластичный слой мантии", "Водный слой", "Воздушный слой"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "geo_2",
+                        title: "Атмосфера и климат",
+                        description: "Атмосфера — воздушная оболочка Земли, состоящая из газов (78% азот, 21% кислород, 1% другие, включая углекислый газ и озон). Слои атмосферы: тропосфера (0-10 км, где формируется погода, содержится 80% воздуха и почти весь водяной пар), стратосфера (10-50 км, содержит озоновый слой, защищающий от УФ-лучей), мезосфера, термосфера, экзосфера. Температура воздуха понижается с высотой в тропосфере на 6°C на каждый километр. Атмосферное давление — сила, с которой воздух давит на поверхность. Измеряется барометром. Ветер — горизонтальное движение воздуха из областей высокого давления в области низкого. Влага в атмосфере: абсолютная и относительная влажность. Облака и осадки образуются при охлаждении и конденсации водяного пара. Погода — состояние атмосферы в данном месте в данное время. Климат — многолетний режим погоды, характерный для данной местности. Зависит от географической широты (угол падения солнечных лучей), близости к океану, рельефа, высоты над уровнем моря.",
+                        quiz: [
+                            { q: "Какой газ преобладает в атмосфере?", options: ["Кислород", "Азот", "Углекислый газ", "Озон"], correct: 1 },
+                            { q: "В каком слое атмосферы формируется погода?", options: ["В стратосфере", "В тропосфере", "В мезосфере", "В термосфере"], correct: 1 },
+                            { q: "На сколько градусов падает температура в тропосфере на 1 км?", options: ["На 1°C", "На 3°C", "На 6°C", "На 10°C"], correct: 2 },
+                            { q: "Что такое климат?", options: ["Погода сегодня", "Многолетний режим погоды", "Температура воды", "Направление ветра"], correct: 1 },
+                            { q: "От чего зависит климат местности?", options: ["Только от широты", "Только от океана", "От широты, океана, рельефа и высоты", "Только от времени года"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "geo_3",
+                        title: "Гидросфера. Мировой океан",
+                        description: "Гидросфера — водная оболочка Земли. Включает Мировой океан, воды суши (реки, озера, болота, ледники, подземные воды) и атмосферные воды. Мировой океан занимает 71% поверхности Земли и делится на 4 океана: Тихий (самый большой и глубокий), Атлантический, Индийский, Северный Ледовитый (самый маленький и мелкий). Океаны делятся на моря (окраинные, внутренние, межостровные). Вода в океане находится в постоянном движении: волны (от ветра), приливы и отливы (от гравитации Луны и Солнца), течения (поверхностные от ветров, глубинные от разницы плотности). Течения бывают теплые (Гольфстрим, Куросио) и холодные (Перуанское, Лабрадорское). Они влияют на климат прибрежных территорий. Свойства океанической воды: соленость (в среднем 35 промилле), температура, прозрачность. Органический мир океана огромен и разнообразен. Океан — источник пищи, полезных ископаемых, энергии, транспортных путей. Проблема — загрязнение.",
+                        quiz: [
+                            { q: "Какой процент поверхности Земли занимает Мировой океан?", options: ["50%", "60%", "71%", "85%"], correct: 2 },
+                            { q: "Какой океан самый большой?", options: ["Атлантический", "Индийский", "Тихий", "Северный Ледовитый"], correct: 2 },
+                            { q: "Что вызывает приливы и отливы?", options: ["Ветер", "Гравитация Луны и Солнца", "Течения", "Землетрясения"], correct: 1 },
+                            { q: "Какова средняя соленость океанической воды?", options: ["10 промилле", "25 промилле", "35 промилле", "50 промилле"], correct: 2 },
+                            { q: "Какое течение является теплым?", options: ["Перуанское", "Лабрадорское", "Гольфстрим", "Курильское"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "geo_4",
+                        title: "Биосфера и почва",
+                        description: "Биосфера — оболочка Земли, населенная живыми организмами. Она охватывает нижнюю часть атмосферы, всю гидросферу и верхнюю часть литосферы. Границы биосферы определяются условиями, пригодными для жизни (температура, наличие воды, кислорода). Живое вещество биосферы — совокупность всех организмов. Биосфера выполняет важные функции: газовую (организмы поглощают и выделяют газы), концентрационную (накопление химических элементов, например, кальций в раковинах), окислительно-восстановительную. Почва — верхний плодородный слой литосферы, обладающий способностью давать урожай. Создатель учения о почве — В.В. Докучаев. Почва образуется в результате взаимодействия климата, материнской породы, рельефа, живых организмов и времени. Состав почвы: минеральные частицы (песок, глина), органическое вещество (гумус/перегной), вода, воздух. Плодородие зависит от содержания гумуса. Почва — важнейшее природное богатство, но она уязвима к эрозии (разрушению ветром и водой) и загрязнению. Охрана почв — важная экологическая задача.",
+                        quiz: [
+                            { q: "Что такое биосфера?", options: ["Твердая оболочка", "Водная оболочка", "Оболочка, населенная живыми организмами", "Воздушная оболочка"], correct: 2 },
+                            { q: "Кто создал учение о почве?", options: ["М.В. Ломоносов", "В.В. Докучаев", "И.П. Павлов", "В.И. Вернадский"], correct: 1 },
+                            { q: "От чего зависит плодородие почвы?", options: ["Только от песка", "От содержания гумуса", "Только от воды", "Только от камней"], correct: 1 },
+                            { q: "Что такое эрозия почвы?", options: ["Удобрение", "Разрушение ветром и водой", "Орошение", "Вспашка"], correct: 1 },
+                            { q: "Какую функцию выполняют организмы в биосфере?", options: ["Только газовую", "Только концентрационную", "Газовую, концентрационную, окислительно-восстановительную", "Никакую"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "geo_5",
+                        title: "Население Земли. Расы и языки",
+                        description: "Население Земли превышает 8 миллиардов человек. Демография — наука о населении (его численности, составе, размещении, движении). Воспроизводство населения: рождаемость, смертность, естественный прирост. В развитых странах прирост низкий, в развивающихся — высокий. Половой и возрастной состав населения влияет на трудовые ресурсы. Размещение населения неравномерно: густо заселены Восточная и Южная Азия, Европа; слабо — пустыни, высокогорья, полярные регионы. Расы — исторически сложившиеся группы населения, имеющие общие наследственные признаки (цвет кожи, глаз, волос, форма лица). Выделяют три основные расы: экваториальная (негроидная), евразийская (европеоидная), азиатско-американская (монголоидная). Все расы биологически равноценны. Языковые семьи: индоевропейская (самая большая, включает русский, английский, хинди), сино-тибетская (китайский), алтайская, афразийская (арабский) и др. Религии: мировые (христианство, ислам, буддизм) и национальные. Население постоянно мигрирует в поисках лучших условий жизни.",
+                        quiz: [
+                            { q: "Что изучает демография?", options: ["Рельеф", "Население", "Климат", "Океаны"], correct: 1 },
+                            { q: "Сколько основных рас выделяют?", options: ["Две", "Три", "Четыре", "Пять"], correct: 1 },
+                            { q: "Какая языковая семья самая большая?", options: ["Алтайская", "Сино-тибетская", "Индоевропейская", "Афразийская"], correct: 2 },
+                            { q: "Где население размещено наиболее густо?", options: ["В пустынях", "В Восточной и Южной Азии", "В Антарктиде", "В высокогорьях"], correct: 1 },
+                            { q: "Какие религии являются мировыми?", options: ["Иудаизм, индуизм", "Христианство, ислам, буддизм", "Шинтоизм, даосизм", "Только христианство"], correct: 1 }
+                        ]
+                    }
+                ]
+            },
+            military_history: {
+                name: "Военная история",
+                icon: "⚔️",
+                topics: [
+                    {
+                        id: "mil_1",
+                        title: "Военное искусство Древнего мира",
+                        description: "Военное искусство Древнего мира (Египет, Ассирия, Вавилон, Персия, Греция, Рим) характеризовалось использованием пехоты и колесниц, а позже — конницы. Основным построением была фаланга (у греков) или легион (у римлян). Греческая фаланга — плотный строй тяжеловооруженной пехоты (гоплитов) с длинными копьями (сарисами у македонян). Македонская фаланга Александра Македонского была непобедима благодаря сочетанию с конницей. Римский легион был более гибким, делился на когорты и манипулы, что позволяло маневрировать на любой местности. Римляне использовали осадные орудия (баллисты, катапульты, тараны), строили укрепленные лагеря. Флот использовался для десантных операций и абордажного боя (у финикийцев, греков, римлян). Военные реформы Мария в Риме создали профессиональную армию. Стратегия и тактика античности заложили основы военного искусства на тысячелетия вперед.",
+                        quiz: [
+                            { q: "Что такое фаланга?", options: ["Конный строй", "Плотный строй пехоты с копьями", "Осадное орудие", "Корабль"], correct: 1 },
+                            { q: "Как называлось основное подразделение римской армии?", options: ["Фаланга", "Легион", "Орда", "Батальон"], correct: 1 },
+                            { q: "Какое осадное орудие использовалось в древности?", options: ["Пушка", "Катапульта", "Танк", "Самолет"], correct: 1 },
+                            { q: "Кто провел военную реформу, создав профессиональную армию в Риме?", options: ["Цезарь", "Александр Македонский", "Марий", "Август"], correct: 2 },
+                            { q: "Какое войско Александра Македонского было непобедимым?", options: ["Только конница", "Только пехота", "Сочетание фаланги и конницы", "Только флот"], correct: 2 }
+                        ]
+                    },
+                    {
+                        id: "mil_2",
+                        title: "Средневековое военное дело. Рыцарство",
+                        description: "В Средние века (V-XV вв.) основой армии стала тяжелая конница — рыцарство. Рыцарь был элитным воином, носил тяжелые доспехи (кольчуга, позже латы), шлем, щит, вооружен длинным копьем и мечом. Рыцарская тактика — таранный удар сомкнутым строем. Пехота играла вспомогательную роль, но в некоторых регионах (Швейцария, Фландрия) хорошо вооруженная пехота (алебардщики, лучники) могла побеждать рыцарей. Замки (крепости) были центрами обороны, имели толстые стены, башни, ров. Осадное искусство включало использование таранов, осадных башен, катапульт, подкопов. Появление огнестрельного оружия (порох пришел из Китая в XIII в.) изменило военное дело. Пушки разрушали стены замков, аркебузы и мушкеты пробивали рыцарские доспехи. Это привело к упадку рыцарства и переходу к наемным армиям и пиканерам с мушкетерами (испанская терция). Крестовые походы обогатили европейцев восточными военными технологиями.",
+                        quiz: [
+                            { q: "Кто был основой средневековой армии в Европе?", options: ["Пехота", "Тяжелая конница (рыцарство)", "Флот", "Лучники"], correct: 1 },
+                            { q: "Что такое кольчуга?", options: ["Щит", "Шлем", "Доспех из металлических колец", "Копье"], correct: 2 },
+                            { q: "Какое оружие привело к упадку рыцарства?", options: ["Лук", "Меч", "Огнестрельное оружие", "Копье"], correct: 2 },
+                            { q: "Откуда в Европу пришел порох?", options: ["Из Индии", "Из Китая", "Из Египта", "Из Америки"], correct: 1 },
+                            { q: "Какая пехота могла побеждать рыцарей?", options: ["Ополчение", "Хорошо вооруженная (алебардщики, лучники)", "Крестьяне", "Торговцы"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "mil_3",
+                        title: "Военные реформы Петра I",
+                        description: "Петр I провел радикальные военные реформы, создав регулярную армию и флот по европейскому образцу. До Петра армия состояла из стрелецких полков и дворянского ополчения. В 1705 г. введена рекрутская повинность: от каждого двора брали одного человека на пожизненную службу. Армия стала регулярной, обученной по единым уставам. Введены новые рода войск: пехота (мушкетеры, гренадеры), конница (кирасиры, драгуны), артиллерия. Создан сильный военно-морской флот (Балтийский, Азовский). Введена единая форма, современное оружие (ружья со штыками, артиллерия). Открыты военные учебные заведения (Навигацкая, Инженерная школы). Приняты военные уставы ('Устав воинский' 1716 г.). Талантливые полководцы: А.Д. Меншиков, Б.П. Шереметев. Реформы позволили России победить в Северной войне (1700-1721) против Швеции (Полтавская битва 1709 г.) и стать морской державой. Армия стала одной из сильнейших в Европе.",
+                        quiz: [
+                            { q: "Какая повинность была введена Петром I в 1705 г.?", options: ["Подушная", "Рекрутская", "Земская", "Гербовая"], correct: 1 },
+                            { q: "Какая битва стала решающей в Северной войне?", options: ["Нарвская", "Полтавская", "Гангутская", "Гренгамская"], correct: 1 },
+                            { q: "Что было создано при Петре I для обучения офицеров?", options: ["Университеты", "Военные учебные заведения", "Академии наук", "Гимназии"], correct: 1 },
+                            { q: "Какой флот был создан при Петре I?", options: ["Только Черноморский", "Только Тихоокеанский", "Регулярный военно-морской флот", "Только речной"], correct: 2 },
+                            { q: "Против какой страны воевала Россия в Северной войне?", options: ["Турция", "Швеция", "Польша", "Франция"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "mil_4",
+                        title: "Отечественная война 1812 года",
+                        description: "Отечественная война 1812 г. — война между Россией и наполеоновской Францией. Наполеон вторгся в Россию с огромной армией ('Великой армией', ок. 600 тыс. чел.). Русская армия (ок. 200 тыс.) отступала, избегая генерального сражения, изматывая врага. Бородинское сражение (26 августа 1812 г., командующий М.И. Кутузов) стало кульминацией. Обе стороны понесли тяжелые потери, но русская армия сохранила боеспособность. Кутузов принял решение оставить Москву, чтобы сохранить армию. 'Тарутинский маневр' позволил русским перекрыть пути отступления. Французы, заняв Москву, не получили капитуляции, а город горел. Отступление Наполеона по разоренной Смоленской дороге, партизанская война (Д.В. Давыдов, В.В. Кожина) и холод уничтожили 'Великую армию'. При переправе через Березину она была добита. Война закончилась полным разгромом французов. Патриотический подъем, единство народа и армии, талант полководцев обеспечили победу.",
+                        quiz: [
+                            { q: "Кто командовал русской армией в Бородинском сражении?", options: ["А.В. Суворов", "М.И. Кутузов", "П.И. Багратион", "М.Б. Барклай-де-Толли"], correct: 1 },
+                            { q: "Какое решение принял Кутузов после Бородина?", options: ["Дать еще один бой", "Оставить Москву", "Атаковать Париж", "Сдаться"], correct: 1 },
+                            { q: "Что сыграло важную роль в поражении французов при отступлении?", options: ["Теплая погода", "Партизанская война и холод", "Подкрепление из Франции", "Мирные переговоры"], correct: 1 },
+                            { q: "Как называлась армия Наполеона?", options: ["Империал", "Великая армия", "Старая гвардия", "Легион"], correct: 1 },
+                            { q: "В каком году произошла Отечественная война?", options: ["1805", "1812", "1815", "1825"], correct: 1 }
+                        ]
+                    },
+                    {
+                        id: "mil_5",
+                        title: "Великая Отечественная война. Коренной перелом",
+                        description: "Великая Отечественная война (1941-1945) — часть Второй мировой войны, война СССР против нацистской Германии и ее союзников. 22 июня 1941 г. Германия без объявления войны напала на СССР. Начальный период — тяжелые поражения, отступление, блокада Ленинграда, битва за Москву (оборонительная операция 1941 г. под командованием Г.К. Жукова). Коренной перелом в войне наступил в 1942-1943 гг. Сталинградская битва (июль 1942 - февраль 1943) — крупнейшее сражение в истории. Советские войска окружили и уничтожили 6-ю армию фельдмаршала Паулюса. Курская битва (июль-август 1943) — крупнейшее танковое сражение (под Прохоровкой). После победы на Курской дуге стратегическая инициатива перешла к СССР. Началось массовое изгнание врага, снятие блокады Ленинграда, освобождение Украины, Белоруссии. Важную роль сыграло открытие Второго фронта союзниками в Нормандии (июнь 1944). Война закончилась взятием Берлина и капитуляцией Германии 8 мая 1945 г. Цена победы — колоссальные жертвы (ок. 27 млн чел.).",
+                        quiz: [
+                            { q: "Когда началась Великая Отечественная война?", options: ["1 сентября 1939 г.", "22 июня 1941 г.", "9 мая 1945 г.", "2 сентября 1945 г."], correct: 1 },
+                            { q: "Какое сражение стало началом коренного перелома?", options: ["Битва за Москву", "Сталинградская битва", "Курская битва", "Берлинская операция"], correct: 1 },
+                            { q: "Где произошло крупнейшее танковое сражение?", options: ["Под Москвой", "Под Сталинградом", "Под Прохоровкой (Курская дуга)", "Под Ленинградом"], correct: 2 },
+                            { q: "Кто командовал советскими войсками в битве за Москву?", options: ["И.В. Сталин", "Г.К. Жуков", "К.К. Рокоссовский", "А.М. Василевский"], correct: 1 },
+                            { q: "Когда закончилась война в Европе?", options: ["8 мая 1945 г.", "9 мая 1945 г.", "2 сентября 1945 г.", "22 июня 1945 г."], correct: 0 }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // =========================================
+        // STATE MANAGEMENT
+        // =========================================
+        let currentSubject = null;
+        let currentTopic = null;
+        let userAnswers = {};
+
+        // =========================================
+        // DOM ELEMENTS
+        // =========================================
+        const mainView = document.getElementById('main-view');
+        const subjectView = document.getElementById('subject-view');
+        const topicView = document.getElementById('topic-view');
+        const subjectsGrid = document.getElementById('subjects-grid');
+        const subjectViewTitle = document.getElementById('subject-view-title');
+        const topicsList = document.getElementById('topics-list');
+        const searchInput = document.getElementById('search-input');
+        const topicExplanation = document.getElementById('topic-explanation');
+        const quizQuestions = document.getElementById('quiz-questions');
+        const quizResult = document.getElementById('quiz-result');
+        const panicModal = document.getElementById('panic-modal');
+        const easterEggModal = document.getElementById('easter-egg-modal');
+
+        // =========================================
+        // RENDER FUNCTIONS
+        // =========================================
+        function renderSubjects() {
+            subjectsGrid.innerHTML = '';
+            for (const key in subjectsData) {
+                const subject = subjectsData[key];
+                const card = document.createElement('div');
+                card.className = 'subject-card';
+                card.innerHTML = `
+                    <span class="subject-icon">${subject.icon}</span>
+                    <h3>${subject.name}</h3>
+                `;
+                card.addEventListener('click', () => openSubject(key));
+                subjectsGrid.appendChild(card);
+            }
+        }
+
+        function renderTopics(filter = '') {
+            topicsList.innerHTML = '';
+            const subject = subjectsData[currentSubject];
+            let hasResults = false;
+
+            subject.topics.forEach(topic => {
+                if (topic.title.toLowerCase().includes(filter.toLowerCase())) {
+                    hasResults = true;
+                    const item = document.createElement('div');
+                    item.className = 'topic-item';
+                    item.innerHTML = `
+                        <h4>${topic.title}</h4>
+                        <span class="arrow">&rarr;</span>
+                    `;
+                    item.addEventListener('click', () => openTopic(topic.id));
+                    topicsList.appendChild(item);
+                }
+            });
+
+            if (!hasResults) {
+                topicsList.innerHTML = '<div class="no-results">Темы не найдены. Попробуйте изменить запрос.</div>';
+            }
+        }
+
+        function renderTopicContent(topicId) {
+            const subject = subjectsData[currentSubject];
+            const topic = subject.topics.find(t => t.id === topicId);
+            if (!topic) return;
+
+            topicExplanation.innerHTML = `
+                <h2>${topic.title}</h2>
+                <p>${topic.description}</p>
+            `;
+
+            quizQuestions.innerHTML = '';
+            userAnswers = {};
+            quizResult.className = 'quiz-result';
+            quizResult.style.display = 'none';
+
+            topic.quiz.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'quiz-question';
+                questionDiv.innerHTML = `<p>${index + 1}. ${q.q}</p><div class="quiz-options" id="options-${index}"></div>`;
+                quizQuestions.appendChild(questionDiv);
+
+                const optionsDiv = questionDiv.querySelector('.quiz-options');
+                q.options.forEach((opt, optIndex) => {
+                    const optionLabel = document.createElement('label');
+                    optionLabel.className = 'quiz-option';
+                    optionLabel.innerHTML = `
+                        <input type="radio" name="q${index}" value="${optIndex}">
+                        <span class="radio-custom"></span>
+                        <span>${opt}</span>
+                    `;
+                    optionLabel.addEventListener('click', () => {
+                        optionsDiv.querySelectorAll('.quiz-option').forEach(el => el.classList.remove('selected'));
+                        optionLabel.classList.add('selected');
+                        userAnswers[index] = optIndex;
+                    });
+                    optionsDiv.appendChild(optionLabel);
+                });
+            });
+        }
+
+        // =========================================
+        // VIEW NAVIGATION
+        // =========================================
+        function showView(view) {
+            [mainView, subjectView, topicView].forEach(v => v.classList.remove('active'));
+            view.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openSubject(subjectKey) {
+            currentSubject = subjectKey;
+            subjectViewTitle.textContent = subjectsData[subjectKey].name;
+            searchInput.value = '';
+            renderTopics();
+            showView(subjectView);
+        }
+
+        function openTopic(topicId) {
+            currentTopic = topicId;
+            renderTopicContent(topicId);
+            showView(topicView);
+        }
+
+        // =========================================
+        // EVENT LISTENERS
+        // =========================================
+        document.getElementById('close-subject-btn').addEventListener('click', () => {
+            showView(mainView);
+        });
+
+        document.getElementById('back-to-topics-btn').addEventListener('click', () => {
+            showView(subjectView);
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            renderTopics(e.target.value);
+        });
+
+        // Panic Button
+        document.getElementById('panic-btn').addEventListener('click', () => {
+            panicModal.classList.add('active');
+        });
+
+        document.getElementById('panic-close').addEventListener('click', () => {
+            panicModal.classList.remove('active');
+        });
+
+        // Quiz Check
+        document.getElementById('check-quiz-btn').addEventListener('click', () => {
+            const subject = subjectsData[currentSubject];
+            const topic = subject.topics.find(t => t.id === currentTopic);
+            let score = 0;
+
+            topic.quiz.forEach((q, index) => {
+                const optionsDiv = document.getElementById(`options-${index}`);
+                const selected = userAnswers[index];
+                
+                optionsDiv.querySelectorAll('.quiz-option').forEach((el, optIndex) => {
+                    el.classList.remove('correct', 'incorrect');
+                    if (optIndex === q.correct) {
+                        el.classList.add('correct');
+                    } else if (optIndex === selected && selected !== q.correct) {
+                        el.classList.add('incorrect');
+                    }
+                });
+
+                if (selected === q.correct) score++;
+            });
+
+            const percentage = (score / topic.quiz.length) * 100;
+            quizResult.textContent = `Твой результат: ${score} из ${topic.quiz.length} (${percentage}%)`;
+            quizResult.className = 'quiz-result show ' + (percentage >= 60 ? 'pass' : 'fail');
+            quizResult.style.display = 'block';
+        });
+
+        // Easter Egg (Konami Code or simple click sequence)
+        let clickCount = 0;
+        document.querySelector('.creator-credit').addEventListener('click', () => {
+            clickCount++;
+            if (clickCount >= 5) {
+                easterEggModal.classList.add('active');
+                clickCount = 0;
+            }
+        });
+
+        document.getElementById('easter-egg-close').addEventListener('click', () => {
+            easterEggModal.classList.remove('active');
+        });
+
+        // =========================================
+        // INITIALIZATION
+        // =========================================
+        renderSubjects();
+    </script>
+</body>
+</html>
